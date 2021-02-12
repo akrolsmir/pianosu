@@ -98,6 +98,7 @@ function createPiano() {
   const keyboardToPiano = Object.fromEntries(
     Object.entries(pianoToKeyboard).map(([k, v]) => [v, k])
   )
+  const notes = Object.keys(pianoToKeyboard)
 
   /**
    * @type {Phaser.Scene}
@@ -109,8 +110,20 @@ function createPiano() {
   for (const [keyboard, keyObject] of Object.entries(keyObjects)) {
     keyObject.on('down', () => {
       // TODO is there a perfomance penalty from adding each time ?
-      const sound = scene.sound.add(keyboardToPiano[keyboard])
+      const note = keyboardToPiano[keyboard]
+      const sound = scene.sound.add(note)
       sound.play()
+
+      // Also draw a hit effect for that note
+      const x = notes.indexOf(note) * 85 + 120
+      const y = 525
+
+      const rect = new Phaser.Geom.Rectangle(x, y, 50, 50)
+      const graphics = scene.add.graphics()
+      graphics.fillStyle(0x4488aa)
+      graphics.fillRectShape(rect)
+
+      setTimeout(() => graphics.destroy(), 100)
     })
   }
 
