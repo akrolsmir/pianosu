@@ -85,12 +85,38 @@ function createPiano() {
     ['key12', 'B3'],
   ]
 
+  // Reference: https://rexrainbow.github.io/phaser3-rex-notes/docs/site/keyboardevents/
+  const pianoToKeyboard = {
+    C3: 'A',
+    D3: 'S',
+    E3: 'D',
+    F3: 'F',
+    G3: 'G',
+    A3: 'H',
+    B3: 'J',
+  }
+  const keyboardToPiano = Object.fromEntries(
+    Object.entries(pianoToKeyboard).map(([k, v]) => [v, k])
+  )
+
+  /**
+   * @type {Phaser.Scene}
+   */
+  const scene = this
+  const keyboardString = Object.keys(keyboardToPiano).join(',')
+  const keyObjects = scene.input.keyboard.addKeys(keyboardString)
+
+  for (const [keyboard, keyObject] of Object.entries(keyObjects)) {
+    keyObject.on('down', () => {
+      // TODO is there a perfomance penalty from adding each time ?
+      const sound = scene.sound.add(keyboardToPiano[keyboard])
+      sound.play()
+    })
+  }
+
   var black = ['key2', 'key4', 'key7', 'key9', 'key11']
 
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i][0]
-    var note = keys[i][1]
-
+  for (const [key, note] of keys) {
     var singleKey = this.add.image(x, y, 'piano', key)
 
     singleKey.setName(note)
