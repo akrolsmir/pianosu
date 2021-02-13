@@ -121,16 +121,18 @@ function createPiano() {
       sound.play()
 
       // Also draw a hit effect for that note
-      const x = notes.indexOf(note) * 85 + 120
-      const y = 525
-
-      const rect = new Phaser.Geom.Rectangle(x, y, 50, 50)
-      const graphics = scene.add.graphics()
-      graphics.fillStyle(0x4488aa)
-      graphics.fillRectShape(rect)
-
-      setTimeout(() => graphics.destroy(), 100)
+      addHitBlock(note)
     })
+  }
+
+  function addHitBlock(note) {
+    const x = notes.indexOf(note) * 85 + 120
+    const y = 525
+    const rect = new Phaser.Geom.Rectangle(x, y, 50, 50)
+    const graphics = scene.add.graphics()
+    graphics.fillStyle(0x4488aa)
+    graphics.fillRectShape(rect)
+    setTimeout(() => graphics.destroy(), 100)
   }
 
   // Show falling blocks over a looping pattern
@@ -201,6 +203,14 @@ function createPiano() {
         }
       }.bind(this, sound)
     )
+  }
+
+  Object.keys(pianoToKeyboard).map(addTargetBlock)
+  function addTargetBlock(note) {
+    const x = notes.indexOf(note) * 85 + 120 + 25
+    const y = 525 + 25
+    scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
+    scene.add.text(x - 10, y - 15, pianoToKeyboard[note], { font: '32px' })
   }
 }
 
