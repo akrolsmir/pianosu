@@ -1,7 +1,11 @@
 <template>
-  <h2>Piano!</h2>
-  Press "P" to start the game
+  <h2>Pianosu!</h2>
+  Press "P" to start the game~
   <div id="gameDiv" style="margin: 0 auto"></div>
+  Song:
+  <a href="https://www.youtube.com/watch?v=ymwtuzIdhfY"
+    >Summertime by Maggie & Nyan</a
+  >
 </template>
 
 <script>
@@ -153,9 +157,7 @@ function createPiano() {
   const moreKeys = scene.input.keyboard.addKey('P')
   const music = scene.sound.add('summertime', { volume: 0.3 })
   moreKeys.on('down', () => {
-    if (music.isPlaying) {
-      music.pause()
-    } else {
+    if (!music.isPlaying) {
       music.play()
 
       // Start showing the beatmap
