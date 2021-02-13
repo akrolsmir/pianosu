@@ -70,14 +70,14 @@ function create() {
   }
 }
 
-/** @type {Tone.Synth} */
+/** @type {Tone.PolySynth} */
 let synth
 
 function createPiano() {
   /** @type {Phaser.Scene} */
   const scene = this
 
-  synth = new Tone.Synth().toDestination()
+  synth = new Tone.PolySynth(Tone.Synth).toDestination()
 
   this.input.addPointer(9)
 
@@ -155,16 +155,20 @@ function createPiano() {
     'C3',
     'D3',
     'C3',
-    'E3',
+    ['C3', 'E3'],
     '',
-    'G3',
+    ['D3', 'G3'],
     '',
   ]
   let index = 0
   function nextNote() {
     let note = tune[index]
     index = (index + 1) % tune.length
-    if (note != ' ') {
+    if (Array.isArray(note)) {
+      // Group of notes to play
+      note.map(addFallingBlock)
+    } else if (note) {
+      // Single note to play
       addFallingBlock(note)
     }
   }
