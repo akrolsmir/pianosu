@@ -6,6 +6,7 @@
 <script>
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
 import Phaser from 'phaser'
+import * as Tone from 'tone'
 
 var config = {
   type: Phaser.AUTO,
@@ -69,9 +70,14 @@ function create() {
   }
 }
 
+/** @type {Tone.Synth} */
+let synth
+
 function createPiano() {
   /** @type {Phaser.Scene} */
   const scene = this
+
+  synth = new Tone.Synth().toDestination()
 
   this.input.addPointer(9)
 
@@ -115,10 +121,8 @@ function createPiano() {
 
   for (const [keyboard, keyObject] of Object.entries(keyObjects)) {
     keyObject.on('down', () => {
-      // TODO is there a perfomance penalty from adding each time ?
       const note = keyboardToPiano[keyboard]
-      const sound = scene.sound.add(note)
-      sound.play()
+      synth.triggerAttackRelease(note, '8n')
 
       // Also draw a hit effect for that note
       addHitBlock(note)

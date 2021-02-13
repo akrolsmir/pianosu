@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "phaser": "^3.52.0",
+    "tone": "^14.7.77",
     "vue": "^3.0.5"
   },
   "devDependencies": {
