@@ -1,5 +1,6 @@
 <template>
   <h2>Piano!</h2>
+  Press "P" to play/stop the background music
   <div id="gameDiv" style="margin: 0 auto"></div>
 </template>
 
@@ -53,6 +54,8 @@ function preload() {
   this.load.audio('A3', 'A3.mp3')
   this.load.audio('Bb3', 'Bb3.mp3')
   this.load.audio('B3', 'B3.mp3')
+
+  this.load.audio('summertime', 'Summertime45.mp3')
 }
 
 function create() {
@@ -143,6 +146,16 @@ function createPiano() {
       addHitBlock(note)
     })
   }
+
+  const moreKeys = scene.input.keyboard.addKey('P')
+  const music = scene.sound.add('summertime', { volume: 0.3 })
+  moreKeys.on('down', () => {
+    if (music.isPlaying) {
+      music.pause()
+    } else {
+      music.play()
+    }
+  })
 
   function addHitBlock(note) {
     const x = notes.indexOf(note) * 85 + 35
