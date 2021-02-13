@@ -1,6 +1,6 @@
 <template>
   <h2>Piano!</h2>
-  Press "P" to play/stop the background music
+  Press "P" to start the game
   <div id="gameDiv" style="margin: 0 auto"></div>
 </template>
 
@@ -8,7 +8,9 @@
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
 import Phaser from 'phaser'
 import * as Tone from 'tone'
-import { summertimeVoice } from '../s15v-notes'
+import { summertimeVoice, transposeCtoD } from '../s15v-notes'
+
+const SUMMERTIME_BPM = 123
 
 function invert(obj) {
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
@@ -140,7 +142,8 @@ function createPiano() {
     keyObject.on('down', () => {
       const keyboard = reverseKeyCode(keyCode)
       const note = keyboardToPiano[keyboard]
-      synth.triggerAttackRelease(note, '8n')
+      const transposed = transposeCtoD(note)
+      synth.triggerAttackRelease(transposed, '8n')
 
       // Also draw a hit effect for that note
       addHitBlock(note)
@@ -154,6 +157,12 @@ function createPiano() {
       music.pause()
     } else {
       music.play()
+
+      // Start showing the beatmap
+      scene.time.addEvent({
+        delay: 0, //ms
+        callback: startBeatmap,
+      })
     }
   })
 
@@ -209,13 +218,15 @@ function createPiano() {
     block.body.velocity.y = 600
   }
 
-  var timer = scene.time.addEvent({
-    delay: 330, // ms
-    callback: nextNote,
-    //args: [],
-    callbackScope: this,
-    loop: true,
-  })
+  // ms per eigth = (60 s/min) * (1000 ms/s) / BPM / (2 eigths/beat)
+  const eigthNoteMs = (60 * 1000) / SUMMERTIME_BPM / 2
+  const startBeatmap = () =>
+    scene.time.addEvent({
+      delay: eigthNoteMs,
+      callback: nextNote,
+      callbackScope: this,
+      loop: true,
+    })
 
   // Support playing notes from mouse click/touch
   var black = ['key2', 'key4', 'key7', 'key9', 'key11']
