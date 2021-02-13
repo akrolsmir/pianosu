@@ -20,6 +20,13 @@ var config = {
       createPiano: createPiano,
     },
   },
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 0 },
+      // debug: true,
+    },
+  },
   parent: 'gameDiv',
 }
 
@@ -63,6 +70,9 @@ function create() {
 }
 
 function createPiano() {
+  /** @type {Phaser.Scene} */
+  const scene = this
+
   this.input.addPointer(9)
 
   var x = 100
@@ -85,7 +95,7 @@ function createPiano() {
     ['key12', 'B3'],
   ]
 
-  // Reference: https://rexrainbow.github.io/phaser3-rex-notes/docs/site/keyboardevents/
+  // Play white notes on keypress
   const pianoToKeyboard = {
     C3: 'A',
     D3: 'S',
@@ -100,10 +110,6 @@ function createPiano() {
   )
   const notes = Object.keys(pianoToKeyboard)
 
-  /**
-   * @type {Phaser.Scene}
-   */
-  const scene = this
   const keyboardString = Object.keys(keyboardToPiano).join(',')
   const keyObjects = scene.input.keyboard.addKeys(keyboardString)
 
@@ -127,6 +133,34 @@ function createPiano() {
     })
   }
 
+  // Show falling blocks over a looping pattern
+  const tune = 'ACDDDCDCACDCE G     '
+  let index = 0
+  function nextNote() {
+    let note = tune[index]
+    index = (index + 1) % tune.length
+    if (note != ' ') {
+      addFallingBlock(note + '3')
+    }
+  }
+
+  function addFallingBlock(note) {
+    const x = notes.indexOf(note) * 85 + 120 + 25
+    const y = 0
+    const block = scene.add.rectangle(x, y, 30, 30, 0xaa4422)
+    scene.physics.add.existing(block)
+    block.body.velocity.y = 600
+  }
+
+  var timer = scene.time.addEvent({
+    delay: 330, // ms
+    callback: nextNote,
+    //args: [],
+    callbackScope: this,
+    loop: true,
+  })
+
+  // Support playing notes from mouse click/touch
   var black = ['key2', 'key4', 'key7', 'key9', 'key11']
 
   for (const [key, note] of keys) {
