@@ -7,6 +7,7 @@
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
 import Phaser from 'phaser'
 import * as Tone from 'tone'
+import { summertimeVoice } from '../s15v-notes'
 
 function invert(obj) {
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
@@ -107,15 +108,15 @@ function createPiano() {
 
   // Play white notes on keypress
   const pianoToKeyboard = {
-    A2: 'A',
-    B2: 'S',
-    C3: 'D',
-    D3: 'F',
-    E3: 'J',
-    F3: 'K',
-    G3: 'L',
-    A3: ';',
-    B3: "'",
+    A3: 'A',
+    B3: 'S',
+    C4: 'D',
+    D4: 'F',
+    E4: 'J',
+    F4: 'K',
+    G4: 'L',
+    A4: ';',
+    B4: "'",
   }
   const keyboardToPiano = invert(pianoToKeyboard)
   const notes = Object.keys(pianoToKeyboard)
@@ -154,7 +155,7 @@ function createPiano() {
   }
 
   // Show falling blocks over a looping pattern
-  const tune = [
+  let tune = [
     'A2',
     'C3',
     'D3',
@@ -172,6 +173,8 @@ function createPiano() {
     ['D3', 'G3'],
     '',
   ]
+  tune = summertimeVoice
+
   let index = 0
   function nextNote() {
     let note = tune[index]
