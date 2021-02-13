@@ -103,13 +103,15 @@ function createPiano() {
 
   // Play white notes on keypress
   const pianoToKeyboard = {
-    C3: 'A',
-    D3: 'S',
-    E3: 'D',
-    F3: 'F',
-    G3: 'G',
-    A3: 'H',
-    B3: 'J',
+    A2: 'A',
+    B2: 'S',
+    C3: 'D',
+    D3: 'F',
+    E3: 'J',
+    F3: 'K',
+    G3: 'L',
+    A3: ';',
+    B3: "'",
   }
   const keyboardToPiano = Object.fromEntries(
     Object.entries(pianoToKeyboard).map(([k, v]) => [v, k])
@@ -130,7 +132,7 @@ function createPiano() {
   }
 
   function addHitBlock(note) {
-    const x = notes.indexOf(note) * 85 + 120
+    const x = notes.indexOf(note) * 85 + 35
     const y = 525
     const rect = new Phaser.Geom.Rectangle(x, y, 50, 50)
     const graphics = scene.add.graphics()
@@ -140,18 +142,35 @@ function createPiano() {
   }
 
   // Show falling blocks over a looping pattern
-  const tune = 'ACDDDCDCACDCE G     '
+  const tune = [
+    'A2',
+    'C3',
+    'D3',
+    'D3',
+    'D3',
+    'C3',
+    'D3',
+    'C3',
+    'A2',
+    'C3',
+    'D3',
+    'C3',
+    'E3',
+    '',
+    'G3',
+    '',
+  ]
   let index = 0
   function nextNote() {
     let note = tune[index]
     index = (index + 1) % tune.length
     if (note != ' ') {
-      addFallingBlock(note + '3')
+      addFallingBlock(note)
     }
   }
 
   function addFallingBlock(note) {
-    const x = notes.indexOf(note) * 85 + 120 + 25
+    const x = notes.indexOf(note) * 85 + 35 + 25
     const y = 0
     const block = scene.add.rectangle(x, y, 30, 30, 0xaa4422)
     scene.physics.add.existing(block)
@@ -211,7 +230,7 @@ function createPiano() {
 
   Object.keys(pianoToKeyboard).map(addTargetBlock)
   function addTargetBlock(note) {
-    const x = notes.indexOf(note) * 85 + 120 + 25
+    const x = notes.indexOf(note) * 85 + 35 + 25
     const y = 525 + 25
     scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
     scene.add.text(x - 10, y - 15, pianoToKeyboard[note], { font: '32px' })
