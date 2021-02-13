@@ -8,6 +8,10 @@
 import Phaser from 'phaser'
 import * as Tone from 'tone'
 
+function invert(obj) {
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
+}
+
 var config = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
@@ -113,16 +117,24 @@ function createPiano() {
     A3: ';',
     B3: "'",
   }
-  const keyboardToPiano = Object.fromEntries(
-    Object.entries(pianoToKeyboard).map(([k, v]) => [v, k])
-  )
+  const keyboardToPiano = invert(pianoToKeyboard)
   const notes = Object.keys(pianoToKeyboard)
 
-  const keyboardString = Object.keys(keyboardToPiano).join(',')
+  // Map keyboard buttons to the right keycode
+  // See https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyCodes.html
+  const keyMap = { ';': 'SEMICOLON', "'": 'QUOTES' }
+  function keyCode(keyboard) {
+    return keyMap[keyboard] || keyboard
+  }
+  function reverseKeyCode(code) {
+    return invert(keyMap)[code] || code
+  }
+  const keyboardString = Object.keys(keyboardToPiano).map(keyCode).join(',')
   const keyObjects = scene.input.keyboard.addKeys(keyboardString)
 
-  for (const [keyboard, keyObject] of Object.entries(keyObjects)) {
+  for (const [keyCode, keyObject] of Object.entries(keyObjects)) {
     keyObject.on('down', () => {
+      const keyboard = reverseKeyCode(keyCode)
       const note = keyboardToPiano[keyboard]
       synth.triggerAttackRelease(note, '8n')
 
