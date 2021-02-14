@@ -14,7 +14,7 @@ import Phaser, { Scene } from 'phaser'
 import * as Tone from 'tone'
 import { summertimeVoice, transposeCtoD } from '../s15v-notes'
 
-const SUMMERTIME_BPM = 123
+const SUMMERTIME_BPM = 125
 
 const PIANO_TO_KEYBOARD = {
   A3: 'A',
@@ -129,7 +129,7 @@ function create() {
   const tune = summertimeVoice
   HIT_OBJS = []
   for (const [i, note] of tune.entries()) {
-    const SUMMERTIME_OFFSET = 1200 // If visuals hit before audio, make this bigger
+    const SUMMERTIME_OFFSET = 965 // If visuals hit before audio, make this bigger
     const eigthNoteMs = (60 * 1000) / SUMMERTIME_BPM / 2
     const time = SUMMERTIME_OFFSET + eigthNoteMs * i
     // TODO: maybe handle simultaneous notes

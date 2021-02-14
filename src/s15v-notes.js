@@ -18,12 +18,12 @@
 // - F should be sharp?
 // - B4 should go down an octave
 export const summertimeVoice = '\
-||GGEAGEC|D DCDDCD| D DAGEC|D D DDED|\
-| CA GECD| D D CD |E D C E |        |\
-||GGEAGEC|D DCDDCD| D DAGEC|DDDDDDDF|\
-| E  CDE |CDE EFG |E C D C |        |\
-||GGEAGEC|D DCDDCD| D EAGEC|D D DDED|\
-| CA GECD| D D CD |E D C BC|        |'
+| GGEAGEC|D DCDDCD| D DAGEC|D D DDED|\
+| C A GEC|D D D CD| E D C E|        |\
+| GGEAGEC|D DCDDCD| D DAGEC|DDDDDDDF|\
+| E   CDE| CDE EFG| E C D C|        |\
+| GGEAGEC|D DCDDCD| D EAGEC|D DCDDED|\
+| C A GEC|D D D CD| E D C B|C       |'
 
   .split('')
   .filter((char) => char != '|')
