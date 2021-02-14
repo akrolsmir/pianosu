@@ -1,6 +1,6 @@
 <template>
   <h2>Pianosu!</h2>
-  Press "P" to start the game~
+  Press "P" to play or pause; "R" to rewind.
   <div id="gameDiv" style="margin: 0 auto"></div>
   Song:
   <a href="https://www.youtube.com/watch?v=ymwtuzIdhfY"
@@ -95,7 +95,8 @@ function update(time, delta) {
   const scene = this
 
   const lastStart = scene.data.get('lastStart')
-  const playTime = time - lastStart
+  const lastPause = scene.data.get('lastPause')
+  const playTime = (lastPause || time) - lastStart
 
   HIT_OBJS.forEach((hitObj) => hitObj.render(playTime))
 }
@@ -135,6 +136,9 @@ function create() {
     // TODO: maybe handle simultaneous notes
     HIT_OBJS.push(makeHitObject(note, time, this))
   }
+  // Init game data
+  this.data.set('lastPause', 1) // Begin in paused state
+  this.data.set('lastStart', 0)
 }
 
 /** @type {Tone.PolySynth} */
@@ -180,16 +184,45 @@ function createPiano() {
     })
   }
 
+  // TODO: computed playtime clock object, instead of this spaghetti
+
   // Play controls
-  const moreKeys = scene.input.keyboard.addKey('P')
+  const playKey = scene.input.keyboard.addKey('P')
   const music = scene.sound.add('summertime', { volume: 0.3 })
-  moreKeys.on('down', () => {
+  playKey.on('down', () => {
     if (!music.isPlaying) {
-      music.play()
-      scene.data.set('lastStart', scene.time.now)
+      const lastPause = scene.data.get('lastPause')
+      const lastStart = scene.data.get('lastStart')
+      const pausedTime = scene.time.now - lastPause
+      const seek = (lastPause - lastStart) / 1000
+      music.play({ seek })
+      scene.data.set('lastPause', 0)
+      scene.data.set('lastStart', lastStart + pausedTime)
     } else {
       music.pause()
-      scene.data.set('lastStart', Infinity)
+      scene.data.set('lastPause', scene.time.now)
+    }
+  })
+
+  // Move song back by 2 sec
+  const rewindKey = scene.input.keyboard.addKey('R')
+  rewindKey.on('down', () => {
+    // TODO: prevent rewinding past 0
+    const newStart = scene.data.get('lastStart') + 2000
+    if (music.isPlaying) {
+      const seek = Math.max(0, (scene.time.now - newStart) / 1000) // in s
+      music.play({ seek })
+      scene.data.set('lastStart', newStart)
+    } else {
+      // scene.data.set('lastStart', newStart)
+      // TODO: Awesome rewind here instead
+      // Over 200 ms, add 2000 ms to the start time
+      scene.time.addEvent({
+        delay: 10,
+        callback: () =>
+          scene.data.set('lastStart', scene.data.get('lastStart') + 100),
+        repeat: 20,
+      })
     }
   })
 
