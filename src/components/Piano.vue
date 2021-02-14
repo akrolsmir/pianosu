@@ -48,13 +48,6 @@ var config = {
     },
     update: update,
   },
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 0 },
-      // debug: true,
-    },
-  },
   // TODO: input: {keyboard: {target: window}} ?
   parent: 'gameDiv',
 }
@@ -89,16 +82,56 @@ function makeHitObject(note, hitTime, /** @type {Phaser.Scene} */ scene) {
 
 let HIT_OBJS
 
+function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
+  // TODO synchronization issues when using these...?
+  let start = 0 // Last start in ms
+  let pause = 1 // Last pause in ms; begin in paused state
+  return {
+    time() {
+      // TODO: prevent rewinding past 0 with Math.max(0, ...)?
+      return (pause || scene.time.now) - start
+    },
+    textTime() {
+      // Format as "MM:SS.mmm"
+      const nice = (f, lead) => `${Math.floor(f)}`.padStart(lead, '0')
+      const min = nice(Math.floor(this.time() / 1000 / 60), 2)
+      const sec = nice((this.time() / 1000) % 60, 2)
+      const msec = nice((this.time() % 1000) - 1, 3)
+      return `${min}:${sec}.${msec}`
+    },
+    resume() {
+      const pausedTime = scene.time.now - pause
+      start += pausedTime
+      pause = 0
+    },
+    pause() {
+      pause = scene.time.now
+    },
+    // Positive offsetMs = fast forward, negative = rewind
+    // If smearMs is set, spread the adjustment over that interval;
+    adjust(offsetMs, smearMs = 0) {
+      if (smearMs === 0) {
+        start -= offsetMs
+        return
+      }
+
+      const DELAY_MS = 10
+      const adjustment = offsetMs / (smearMs / DELAY_MS)
+      scene.time.addEvent({
+        delay: DELAY_MS,
+        repeat: smearMs / DELAY_MS,
+        callback: () => (start -= adjustment),
+      })
+    },
+  }
+}
+let SEEKBAR
+let SEEK_TEXT
+
 // Time is msecs, delta is time since last update
 function update(time, delta) {
-  /** @type {Phaser.Scene} */
-  const scene = this
-
-  const lastStart = scene.data.get('lastStart')
-  const lastPause = scene.data.get('lastPause')
-  const playTime = (lastPause || time) - lastStart
-
-  HIT_OBJS.forEach((hitObj) => hitObj.render(playTime))
+  HIT_OBJS.forEach((hitObj) => hitObj.render(SEEKBAR.time()))
+  SEEK_TEXT.text = SEEKBAR.textTime()
 }
 
 function preload() {
@@ -136,9 +169,11 @@ function create() {
     // TODO: maybe handle simultaneous notes
     HIT_OBJS.push(makeHitObject(note, time, this))
   }
-  // Init game data
-  this.data.set('lastPause', 1) // Begin in paused state
-  this.data.set('lastStart', 0)
+
+  // Init seekbar
+  SEEKBAR = makeSeekbar(this)
+  SEEK_TEXT = this.add.text(10, 10, SEEKBAR.time())
+  SEEK_TEXT.setDepth(50)
 }
 
 /** @type {Tone.PolySynth} */
@@ -184,45 +219,43 @@ function createPiano() {
     })
   }
 
-  // TODO: computed playtime clock object, instead of this spaghetti
-
   // Play controls
   const playKey = scene.input.keyboard.addKey('P')
   const music = scene.sound.add('summertime', { volume: 0.3 })
   playKey.on('down', () => {
     if (!music.isPlaying) {
-      const lastPause = scene.data.get('lastPause')
-      const lastStart = scene.data.get('lastStart')
-      const pausedTime = scene.time.now - lastPause
-      const seek = (lastPause - lastStart) / 1000
-      music.play({ seek })
-      scene.data.set('lastPause', 0)
-      scene.data.set('lastStart', lastStart + pausedTime)
+      SEEKBAR.resume()
+      music.play({ seek: SEEKBAR.time() / 1000 })
     } else {
+      SEEKBAR.pause()
       music.pause()
-      scene.data.set('lastPause', scene.time.now)
     }
   })
 
   // Move song back by 2 sec
   const rewindKey = scene.input.keyboard.addKey('R')
-  rewindKey.on('down', () => {
-    // TODO: prevent rewinding past 0
-    const newStart = scene.data.get('lastStart') + 2000
+  rewindKey.on('down', async () => {
     if (music.isPlaying) {
-      const seek = Math.max(0, (scene.time.now - newStart) / 1000) // in s
-      music.play({ seek })
-      scene.data.set('lastStart', newStart)
+      music.pause()
+      // TODO Theoretically should be able to pause and awesome rewind, but...
+      // Complicated timeline logic so ignore for now
+      SEEKBAR.adjust(-2000)
+      music.play({ seek: SEEKBAR.time() / 1000 })
     } else {
-      // scene.data.set('lastStart', newStart)
-      // TODO: Awesome rewind here instead
-      // Over 200 ms, add 2000 ms to the start time
-      scene.time.addEvent({
-        delay: 10,
-        callback: () =>
-          scene.data.set('lastStart', scene.data.get('lastStart') + 100),
-        repeat: 20,
-      })
+      // AWESOME REWIND
+      SEEKBAR.adjust(-2000, 200)
+    }
+  })
+
+  // Fast forward by 2 sec
+  const ffKey = scene.input.keyboard.addKey('T')
+  ffKey.on('down', async () => {
+    if (music.isPlaying) {
+      music.pause()
+      SEEKBAR.adjust(2000)
+      music.play({ seek: SEEKBAR.time() / 1000 })
+    } else {
+      SEEKBAR.adjust(2000, 200)
     }
   })
 
