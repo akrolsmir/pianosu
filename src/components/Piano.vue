@@ -45,22 +45,7 @@ var config = {
 
 function preload() {
   this.load.setPath('/assets/piano')
-
   this.load.atlas('piano', 'piano.png', 'piano.json')
-
-  this.load.audio('C3', 'C3.mp3')
-  this.load.audio('Db3', 'Db3.mp3')
-  this.load.audio('D3', 'D3.mp3')
-  this.load.audio('Eb3', 'Eb3.mp3')
-  this.load.audio('E3', 'E3.mp3')
-  this.load.audio('F3', 'F3.mp3')
-  this.load.audio('Gb3', 'Gb3.mp3')
-  this.load.audio('G3', 'G3.mp3')
-  this.load.audio('Ab3', 'Ab3.mp3')
-  this.load.audio('A3', 'A3.mp3')
-  this.load.audio('Bb3', 'Bb3.mp3')
-  this.load.audio('B3', 'B3.mp3')
-
   this.load.audio('summertime', 'Summertime45.mp3')
 }
 
@@ -91,29 +76,14 @@ function createPiano() {
   /** @type {Phaser.Scene} */
   const scene = this
 
-  synth = new Tone.PolySynth(Tone.Synth).toDestination()
-
-  this.input.addPointer(9)
-
-  var x = 100
-  var y = 0
-
-  this.add.image(x, y, 'piano', 'panel').setOrigin(0)
-
-  var keys = [
-    ['key1', 'C3'],
-    ['key2', 'Db3'],
-    ['key3', 'D3'],
-    ['key4', 'Eb3'],
-    ['key5', 'E3'],
-    ['key6', 'F3'],
-    ['key7', 'Gb3'],
-    ['key8', 'G3'],
-    ['key9', 'Ab3'],
-    ['key10', 'A3'],
-    ['key11', 'Bb3'],
-    ['key12', 'B3'],
-  ]
+  // Draw the piano keys background. TODO: Could be static image
+  const x = 100
+  const y = 0
+  scene.add.image(x, y, 'piano', 'panel').setOrigin(0)
+  for (let i = 1; i <= 12; i++) {
+    const singleKey = scene.add.image(x, y, 'piano', `key${i}`)
+    singleKey.setOrigin(0)
+  }
 
   // Play white notes on keypress
   const pianoToKeyboard = {
@@ -142,6 +112,7 @@ function createPiano() {
   const keyboardString = Object.keys(keyboardToPiano).map(keyCode).join(',')
   const keyObjects = scene.input.keyboard.addKeys(keyboardString)
 
+  synth = new Tone.PolySynth(Tone.Synth).toDestination()
   for (const [keyCode, keyObject] of Object.entries(keyObjects)) {
     keyObject.on('down', () => {
       const keyboard = reverseKeyCode(keyCode)
@@ -154,17 +125,23 @@ function createPiano() {
     })
   }
 
+  // Play controls
   const moreKeys = scene.input.keyboard.addKey('P')
   const music = scene.sound.add('summertime', { volume: 0.3 })
   moreKeys.on('down', () => {
     if (!music.isPlaying) {
       music.play()
+      scene.time.paused = false
 
       // Start showing the beatmap
       scene.time.addEvent({
         delay: 0, //ms
         callback: startBeatmap,
       })
+    } else {
+      music.resume()
+      scene.time.paused = true
+      scene.time.timeScale
     }
   })
 
@@ -179,25 +156,7 @@ function createPiano() {
   }
 
   // Show falling blocks over a looping pattern
-  let tune = [
-    'A2',
-    'C3',
-    'D3',
-    'D3',
-    'D3',
-    'C3',
-    'D3',
-    'C3',
-    'A2',
-    'C3',
-    'D3',
-    'C3',
-    ['C3', 'E3'],
-    '',
-    ['D3', 'G3'],
-    '',
-  ]
-  tune = summertimeVoice
+  const tune = summertimeVoice
 
   let index = 0
   function nextNote() {
@@ -226,52 +185,9 @@ function createPiano() {
     scene.time.addEvent({
       delay: eigthNoteMs,
       callback: nextNote,
-      callbackScope: this,
+      callbackScope: scene,
       loop: true,
     })
-
-  // Support playing notes from mouse click/touch
-  var black = ['key2', 'key4', 'key7', 'key9', 'key11']
-
-  for (const [key, note] of keys) {
-    var singleKey = this.add.image(x, y, 'piano', key)
-
-    singleKey.setName(note)
-    singleKey.setOrigin(0)
-
-    if (black.indexOf(key) !== -1) {
-      singleKey.setDepth(1)
-    }
-
-    var frame = singleKey.frame
-
-    var hitArea = new Phaser.Geom.Rectangle(
-      frame.x,
-      frame.y,
-      frame.width,
-      frame.height
-    )
-
-    singleKey.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains)
-
-    var sound = this.sound.add(note)
-
-    singleKey.on(
-      'pointerdown',
-      function (sound) {
-        sound.play()
-      }.bind(this, sound)
-    )
-
-    singleKey.on(
-      'pointerover',
-      function (sound, pointer) {
-        if (pointer.isDown) {
-          sound.play()
-        }
-      }.bind(this, sound)
-    )
-  }
 
   Object.keys(pianoToKeyboard).map(addTargetBlock)
   function addTargetBlock(note) {
@@ -284,7 +200,7 @@ function createPiano() {
 
 export default {
   mounted() {
-    var game = new Phaser.Game(config)
+    const game = new Phaser.Game(config)
   },
 }
 </script>
