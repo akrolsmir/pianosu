@@ -22,7 +22,7 @@ export const summertimeVoice = '\
 | CA GECD| D D CD |E D C E |        |\
 ||GGEAGEC|D DCDDCD| D DAGEC|DDDDDDDF|\
 | E  CDE |CDE EFG |E C D C |        |\
-||GGEAGEC|D DCDDCD| D DAGEC|D D DDED|\
+||GGEAGEC|D DCDDCD| D EAGEC|D D DDED|\
 | CA GECD| D D CD |E D C BC|        |'
 
   .split('')
