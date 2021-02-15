@@ -43,3 +43,22 @@ export function transposeCtoD(note) {
   }
   return note && cToD[note]
 }
+
+export const summertimeDetails = {
+  bpm: 125,
+  voice: summertimeVoice,
+  transposeFunc: transposeCtoD,
+  keyboard: {
+    A3: 'A',
+    B3: 'S',
+    C4: 'D',
+    D4: 'F',
+    E4: 'J',
+    F4: 'K',
+    G4: 'L',
+    A4: ';',
+    B4: "'",
+  },
+  offset: 965,
+  soundFile: 'Summertime45.mp3',
+}
