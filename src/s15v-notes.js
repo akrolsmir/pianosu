@@ -23,7 +23,7 @@ export const summertimeVoice = '\
 | GGEAGEC|D DCDDCD| D DAGEC|DDDDDDDF|\
 | E   CDE| CDE EFG| E C D C|        |\
 | GGEAGEC|D DCDDCD| D EAGEC|D DCDDED|\
-| C A GEC|D D D CD| E D C B|C       |'
+| C A GEC|D DCD CD| E D C B|C       |'
 
   .split('')
   .filter((char) => char != '|')
