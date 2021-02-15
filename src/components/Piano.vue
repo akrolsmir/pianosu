@@ -89,7 +89,7 @@ function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
   return {
     time() {
       // TODO: prevent rewinding past 0 with Math.max(0, ...)?
-      return (pause || scene.time.now) - start
+      return ((pause || scene.time.now) - start) * RATE
     },
     textTime() {
       // Format as "MM:SS.mmm"
@@ -123,10 +123,14 @@ function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
         callback: () => (start -= adjustment),
       })
     },
+    playConfig() {
+      return { seek: this.time() / 1000, rate: RATE }
+    },
   }
 }
 let SEEKBAR
 let SEEK_TEXT
+let RATE = 1 // TODO: Rate changes should shift pitches too
 
 // Time is msecs, delta is time since last update
 function update(time, delta) {
@@ -225,7 +229,7 @@ function createPiano() {
   playKey.on('down', () => {
     if (!music.isPlaying) {
       SEEKBAR.resume()
-      music.play({ seek: SEEKBAR.time() / 1000 })
+      music.play(SEEKBAR.playConfig())
     } else {
       SEEKBAR.pause()
       music.pause()
@@ -240,7 +244,7 @@ function createPiano() {
       // TODO Theoretically should be able to pause and awesome rewind, but...
       // Complicated timeline logic so ignore for now
       SEEKBAR.adjust(-2000)
-      music.play({ seek: SEEKBAR.time() / 1000 })
+      music.play(SEEKBAR.playConfig())
     } else {
       // AWESOME REWIND
       SEEKBAR.adjust(-2000, 200)
@@ -253,7 +257,7 @@ function createPiano() {
     if (music.isPlaying) {
       music.pause()
       SEEKBAR.adjust(2000)
-      music.play({ seek: SEEKBAR.time() / 1000 })
+      music.play(SEEKBAR.playConfig())
     } else {
       SEEKBAR.adjust(2000, 200)
     }
