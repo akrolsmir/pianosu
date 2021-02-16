@@ -3,6 +3,7 @@
   Press "P" to play or pause; "R" to rewind.
   <div id="gameDiv" style="margin: 0 auto"></div>
   Song:
+  <!-- TODO: Song and YouTube link also be part of song config. -->
   <a href="https://www.youtube.com/watch?v=ymwtuzIdhfY"
     >Summertime by Maggie & Nyan</a
   >
@@ -12,21 +13,18 @@
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
 import Phaser, { Scene } from 'phaser'
 import * as Tone from 'tone'
-import { summertimeVoice, transposeCtoD } from '../s15v-notes'
+import { summertimeDetails } from '../s15v-notes'
+import { takeonmeDetails } from '../takeonme-notes'
 
-const SUMMERTIME_BPM = 125
-
-const PIANO_TO_KEYBOARD = {
-  A3: 'A',
-  B3: 'S',
-  C4: 'D',
-  D4: 'F',
-  E4: 'J',
-  F4: 'K',
-  G4: 'L',
-  A4: ';',
-  B4: "'",
+const SONG_NAME = 'summertime' // TODO: Add a better way to determine the specific song
+const SONG_DETAILS_BY_NAME = {
+  'summertime': summertimeDetails,
+  'takeonme': takeonmeDetails,
 }
+
+const SONG_DETAILS = SONG_DETAILS_BY_NAME[SONG_NAME]
+const PIANO_TO_KEYBOARD = SONG_DETAILS.keyboard
+
 const KEYBOARD_TO_PIANO = invert(PIANO_TO_KEYBOARD)
 const NOTES = Object.keys(PIANO_TO_KEYBOARD)
 
@@ -141,7 +139,7 @@ function update(time, delta) {
 function preload() {
   this.load.setPath('/assets/piano')
   this.load.atlas('piano', 'piano.png', 'piano.json')
-  this.load.audio('summertime', 'Summertime45.mp3')
+  this.load.audio(SONG_NAME, SONG_DETAILS.soundFile)
 }
 
 function create() {
@@ -164,12 +162,11 @@ function create() {
   }
 
   // Initialize the hit objects for this song
-  const tune = summertimeVoice
+  const tune = SONG_DETAILS.voice
   HIT_OBJS = []
   for (const [i, note] of tune.entries()) {
-    const SUMMERTIME_OFFSET = 965 // If visuals hit before audio, make this bigger
-    const eigthNoteMs = (60 * 1000) / SUMMERTIME_BPM / 2
-    const time = SUMMERTIME_OFFSET + eigthNoteMs * i
+    const eighthNoteMs = (60 * 1000) / SONG_DETAILS.bpm / 2
+    const time = SONG_DETAILS.offset + eighthNoteMs * i
     // TODO: maybe handle simultaneous notes
     HIT_OBJS.push(makeHitObject(note, time, this))
   }
@@ -215,7 +212,7 @@ function createPiano() {
     keyObject.on('down', () => {
       const keyboard = reverseKeyCode(keyCode)
       const note = KEYBOARD_TO_PIANO[keyboard]
-      const transposed = transposeCtoD(note)
+      const transposed = SONG_DETAILS.transposeFunc(note)
       synth.triggerAttackRelease(transposed, '8n')
 
       // Also draw a hit effect for that note
@@ -225,7 +222,7 @@ function createPiano() {
 
   // Play controls
   const playKey = scene.input.keyboard.addKey('P')
-  const music = scene.sound.add('summertime', { volume: 0.3 })
+  const music = scene.sound.add(SONG_NAME, { volume: 0.3 })
   playKey.on('down', () => {
     if (!music.isPlaying) {
       SEEKBAR.resume()
