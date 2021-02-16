@@ -45,6 +45,12 @@ export function transposeCtoD(note) {
 }
 
 export const summertimeDetails = {
+  id: 'summertime',
+  title: 'Summertime (하계)',
+  artist: 'Maggie & Nyan',
+  youtubeUrl: 'https://www.youtube.com/watch?v=ymwtuzIdhfY',
+  youtubeOffset: 0,
+
   bpm: 125,
   voice: summertimeVoice,
   transposeFunc: transposeCtoD,

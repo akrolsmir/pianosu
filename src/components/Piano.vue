@@ -1,12 +1,8 @@
 <template>
-  <h2>Pianosu!</h2>
-  Press "P" to play or pause; "R" to rewind.
+  <h2>Pianosu: {{ song.title }} by {{ song.artist }}</h2>
   <div id="gameDiv" style="margin: 0 auto"></div>
-  Song:
-  <!-- TODO: Song and YouTube link also be part of song config. -->
-  <a href="https://www.youtube.com/watch?v=ymwtuzIdhfY"
-    >Summertime by Maggie & Nyan</a
-  >
+  Press "P" to play or pause; "R" to rewind; "T" to fast-forward.
+  <SongsList />
 </template>
 
 <script>
@@ -15,14 +11,15 @@ import Phaser, { Scene } from 'phaser'
 import * as Tone from 'tone'
 import { summertimeDetails } from '../s15v-notes'
 import { takeonmeDetails } from '../takeonme-notes'
+import SongsList from './SongsList.vue'
 
 const SONG_NAME = 'takeonme' // TODO: Add a better way to determine the specific song
 const SONG_DETAILS_BY_NAME = {
-  'summertime': summertimeDetails,
-  'takeonme': takeonmeDetails,
+  summertime: summertimeDetails,
+  takeonme: takeonmeDetails,
 }
 
-const SONG_DETAILS = SONG_DETAILS_MAP[SONG_DETAILS_BY_NAME]
+const SONG_DETAILS = SONG_DETAILS_BY_NAME[SONG_NAME]
 const PIANO_TO_KEYBOARD = SONG_DETAILS.keyboard
 
 const KEYBOARD_TO_PIANO = invert(PIANO_TO_KEYBOARD)
@@ -283,7 +280,16 @@ function createPiano() {
 }
 
 export default {
+  components: {
+    SongsList,
+  },
+  data() {
+    return {
+      song: {},
+    }
+  },
   mounted() {
+    this.song = takeonmeDetails
     const game = new Phaser.Game(config)
   },
 }
