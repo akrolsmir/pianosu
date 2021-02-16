@@ -16,7 +16,7 @@ import * as Tone from 'tone'
 import { summertimeDetails } from '../s15v-notes'
 import { takeonmeDetails } from '../takeonme-notes'
 
-const SONG_NAME = 'takeonme' // TODO: Add a better way to determine the specific song
+const SONG_NAME = 'summertime' // TODO: Add a better way to determine the specific song
 const SONG_DETAILS_BY_NAME = {
   'summertime': summertimeDetails,
   'takeonme': takeonmeDetails,
