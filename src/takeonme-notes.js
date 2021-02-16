@@ -29,6 +29,12 @@ export function transposeToG(note) {
 }
 
 export const takeonmeDetails = {
+  id: 'take-on-me',
+  title: 'Take On Me',
+  artist: 'a-ha',
+  youtubeUrl: 'https://www.youtube.com/watch?v=djV11Xbc914',
+  youtubeOffset: 0,
+
   bpm: 145,
   voice: takeonmeVoice,
   transposeFunc: transposeToG,
@@ -47,5 +53,5 @@ export const takeonmeDetails = {
     C5: "'",
   },
   offset: 1100,
-  soundFile: 'Takeonme21.mp3'
+  soundFile: 'Takeonme21.mp3',
 }

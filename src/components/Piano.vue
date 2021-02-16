@@ -1,12 +1,8 @@
 <template>
-  <h2>Pianosu!</h2>
-  Press "P" to play or pause; "R" to rewind.
+  <h2>Pianosu: {{ song.title }} by {{ song.artist }}</h2>
   <div id="gameDiv" style="margin: 0 auto"></div>
-  Song:
-  <!-- TODO: Song and YouTube link also be part of song config. -->
-  <a href="https://www.youtube.com/watch?v=ymwtuzIdhfY"
-    >Summertime by Maggie & Nyan</a
-  >
+  Press "P" to play or pause; "R" to rewind; "T" to fast-forward.
+  <SongsList />
 </template>
 
 <script>
@@ -15,18 +11,14 @@ import Phaser, { Scene } from 'phaser'
 import * as Tone from 'tone'
 import { summertimeDetails } from '../s15v-notes'
 import { takeonmeDetails } from '../takeonme-notes'
+import SongsList from './SongsList.vue'
 
-const SONG_NAME = 'summertime' // TODO: Add a better way to determine the specific song
-const SONG_DETAILS_BY_NAME = {
-  'summertime': summertimeDetails,
-  'takeonme': takeonmeDetails,
-}
-
-const SONG_DETAILS = SONG_DETAILS_BY_NAME[SONG_NAME]
-const PIANO_TO_KEYBOARD = SONG_DETAILS.keyboard
-
-const KEYBOARD_TO_PIANO = invert(PIANO_TO_KEYBOARD)
-const NOTES = Object.keys(PIANO_TO_KEYBOARD)
+// TODO unlowercase, as these are no longer constants
+let SONG_ID
+let SONG_DETAILS
+let PIANO_TO_KEYBOARD
+let KEYBOARD_TO_PIANO
+let NOTES
 
 function invert(obj) {
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
@@ -139,7 +131,7 @@ function update(time, delta) {
 function preload() {
   this.load.setPath('/assets/piano')
   this.load.atlas('piano', 'piano.png', 'piano.json')
-  this.load.audio(SONG_NAME, SONG_DETAILS.soundFile)
+  this.load.audio(SONG_ID, SONG_DETAILS.soundFile)
 }
 
 function create() {
@@ -222,7 +214,7 @@ function createPiano() {
 
   // Play controls
   const playKey = scene.input.keyboard.addKey('P')
-  const music = scene.sound.add(SONG_NAME, { volume: 0.3 })
+  const music = scene.sound.add(SONG_ID, { volume: 0.3 })
   playKey.on('down', () => {
     if (!music.isPlaying) {
       SEEKBAR.resume()
@@ -279,9 +271,53 @@ function createPiano() {
   }
 }
 
+let game
+
 export default {
+  components: {
+    SongsList,
+  },
+  data() {
+    return {
+      song: {},
+    }
+  },
+  created() {
+    // Reload song if route changed
+    // See: https://next.router.vuejs.org/guide/essentials/dynamic-matching.html#reacting-to-params-changes
+    this.$watch(
+      () => this.$route.params,
+      (toParams, previousParams) => {
+        this.loadSongFromRoute()
+      }
+    )
+  },
   mounted() {
-    const game = new Phaser.Game(config)
+    this.loadSongFromRoute()
+  },
+  methods: {
+    loadSongFromRoute() {
+      const SONG_DETAILS_BY_ID = {
+        summertime: summertimeDetails,
+        'take-on-me': takeonmeDetails,
+      }
+
+      // Fill in song information before instantiating the game
+      SONG_ID = this.$route.params.id || 'take-on-me'
+      SONG_DETAILS = SONG_DETAILS_BY_ID[SONG_ID]
+      PIANO_TO_KEYBOARD = SONG_DETAILS.keyboard
+      KEYBOARD_TO_PIANO = invert(PIANO_TO_KEYBOARD)
+      NOTES = Object.keys(PIANO_TO_KEYBOARD)
+
+      this.song = SONG_DETAILS
+
+      if (game) {
+        // Remove old game if this is a reload
+        // See: https://stackoverflow.com/a/59617457/1222351
+        game.destroy(true, false)
+      }
+      game = new Phaser.Game(config)
+    },
   },
 }
 </script>
