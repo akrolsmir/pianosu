@@ -22,7 +22,7 @@ const SONG_DETAILS_BY_NAME = {
   'takeonme': takeonmeDetails,
 }
 
-const SONG_DETAILS = SONG_DETAILS_MAP[SONG_DETAILS_BY_NAME]
+const SONG_DETAILS = SONG_DETAILS_BY_NAME[SONG_NAME]
 const PIANO_TO_KEYBOARD = SONG_DETAILS.keyboard
 
 const KEYBOARD_TO_PIANO = invert(PIANO_TO_KEYBOARD)
@@ -165,10 +165,8 @@ function create() {
   const tune = SONG_DETAILS.voice
   HIT_OBJS = []
   for (const [i, note] of tune.entries()) {
-    const songOffset = SONG_DETAILS.offset
-    const songBpm = SONG_DETAILS.bpm
     const eighthNoteMs = (60 * 1000) / SONG_DETAILS.bpm / 2
-    const time = songOffset + eighthNoteMs * i
+    const time = SONG_DETAILS.offset + eighthNoteMs * i
     // TODO: maybe handle simultaneous notes
     HIT_OBJS.push(makeHitObject(note, time, this))
   }
@@ -214,8 +212,7 @@ function createPiano() {
     keyObject.on('down', () => {
       const keyboard = reverseKeyCode(keyCode)
       const note = KEYBOARD_TO_PIANO[keyboard]
-      const transposeFunc = SONG_DETAILS.transposeFunc
-      const transposed = transposeFunc(note)
+      const transposed = SONG_DETAILS.transposeFunc(note)
       synth.triggerAttackRelease(transposed, '8n')
 
       // Also draw a hit effect for that note

@@ -1,4 +1,4 @@
-// Try to get notes out of summertime15-voice.js
+// Courtesy of https://pianoletternotes.blogspot.com/2018/02/take-on-me-by-ha.html
 // ~120 BPM, so each 8th note = ~100 * 1/400ths of a second
 // Maps each tick (1/400sec) to a frequency (hertz)
 // export default {
