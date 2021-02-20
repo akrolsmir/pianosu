@@ -63,6 +63,9 @@ function makeHitObject(
 ) {
   const rect = scene.add.rectangle(-100, -100, 30, 30, color, alpha)
   rect.setDepth(100)
+
+  let replayEvent
+
   return {
     note,
     hitTime,
@@ -73,11 +76,30 @@ function makeHitObject(
       const y = TARGET_Y - (hitTime - time) * FALL_VELOCITY
       rect.setPosition(x, y)
     },
+    // Schedule this note to be replayed when seekbar gets there
+    schedule(seekbarTime) {
+      const delay = hitTime - seekbarTime
+      if (delay >= 0) {
+        replayEvent = scene.time.addEvent({
+          delay,
+          callback: () => {
+            synth.triggerAttackRelease(note, '8n')
+          },
+        })
+      }
+    },
+    unschedule() {
+      if (replayEvent) {
+        replayEvent.destroy()
+      }
+    },
   }
 }
 
 let HIT_OBJS
+let PLAYED_OBJS
 
+// TODO: Does it make sense to use Phaser's built in timeline?
 function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
   // TODO synchronization issues when using these...?
   let start = 0 // Last start in ms
@@ -99,9 +121,19 @@ function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
       const pausedTime = scene.time.now - pause
       start += pausedTime
       pause = 0
+
+      // Schedule each PLAYED_OBJ for replay
+      for (const hitObj of PLAYED_OBJS) {
+        hitObj.schedule(this.time())
+      }
     },
     pause() {
       pause = scene.time.now
+
+      // Cancel all replays
+      for (const hitObj of PLAYED_OBJS) {
+        hitObj.unschedule()
+      }
     },
     isPaused() {
       return pause != 0
@@ -134,6 +166,7 @@ let RATE = 1 // TODO: Rate changes should shift pitches too
 // Time is msecs, delta is time since last update
 function update(time, delta) {
   HIT_OBJS.forEach((hitObj) => hitObj.render(SEEKBAR.time()))
+  PLAYED_OBJS.forEach((hitObj) => hitObj.render(SEEKBAR.time()))
   SEEK_TEXT.text = SEEKBAR.textTime()
 }
 
@@ -171,6 +204,7 @@ function create() {
     // TODO: maybe handle simultaneous notes
     HIT_OBJS.push(makeHitObject(note, time, this))
   }
+  PLAYED_OBJS = []
 
   // Init seekbar
   SEEKBAR = makeSeekbar(this)
@@ -221,7 +255,7 @@ function createPiano() {
       }
       // If not paused, record this note
       else {
-        HIT_OBJS.push(makeHitObject(note, SEEKBAR.time(), this, 0x4488aa))
+        PLAYED_OBJS.push(makeHitObject(note, SEEKBAR.time(), this, 0x4488aa))
       }
     })
   }
@@ -239,6 +273,8 @@ function createPiano() {
     }
   })
 
+  // Rewind/FF while unpaused doesn't replay notes correctly...
+  // TODO: Either overhaul timeline logic, or just disable while unpaused
   // Move song back by 2 sec
   const rewindKey = scene.input.keyboard.addKey('R')
   rewindKey.on('down', async () => {
