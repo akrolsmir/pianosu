@@ -13,11 +13,12 @@
 //   880: '300', // D4 294
 // }
 
-// Mapped into C Major.
+// Mapped into C Major as 8th notes.
 // TODO: Missing 16ths, and some notes are missing or off:
 // - F should be sharp?
 // - B4 should go down an octave
-export const summertimeVoice = '\
+export const summertimeEighthsInC =
+  '\
 | GGEAGEC|D DCDDCD| D DAGEC|D D DDED|\
 | C A GEC|D D D CD| E D C E|        |\
 | GGEAGEC|D DCDDCD| D DAGEC|DDDDDDDF|\
@@ -25,9 +26,12 @@ export const summertimeVoice = '\
 | GGEAGEC|D DCDDCD| D EAGEC|D DCDDED|\
 | C A GEC|D DCD CD| E D C B|C       |'
 
-  .split('')
-  .filter((char) => char != '|')
-  .map((char) => (char == ' ' ? '' : `${char}4`))
+function eigthsToArray(eigths) {
+  return eigths
+    .split('')
+    .filter((char) => char != '|')
+    .map((char) => (char == ' ' ? '' : `${char}4`))
+}
 
 export function transposeCtoD(note) {
   const cToD = {
@@ -52,19 +56,233 @@ export const summertimeDetails = {
   youtubeOffset: 0,
 
   bpm: 125,
-  voice: summertimeVoice,
-  transposeFunc: transposeCtoD,
-  keyboard: {
-    A3: 'A',
-    B3: 'S',
-    C4: 'D',
-    D4: 'F',
-    E4: 'J',
-    F4: 'K',
-    G4: 'L',
-    A4: ';',
-    B4: "'",
+  keybinding: {
+    A: 'C#4',
+    S: 'D4',
+    D: 'E4',
+    F: 'F#4',
+    J: 'G4',
+    K: 'A4',
+    L: 'B4',
+    ';': 'C#5',
   },
+  voice: voice(),
   offset: 965,
   soundFile: 'Summertime45.mp3',
+}
+
+// To regenerate voice from the readable summertimeEightsInC:
+// console.log(eigthsToArray(summertimeEighthsInC).map(transposeCtoD))
+
+function voice() {
+  return [
+    '',
+    'A4',
+    'A4',
+    'F#4',
+    'B4',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'E4',
+    'E4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    'B4',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    'E4',
+    'F#4',
+    'E4',
+    '',
+    'D4',
+    '',
+    'B4',
+    '',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    '',
+    'D4',
+    'E4',
+    '',
+    'F#4',
+    '',
+    'E4',
+    '',
+    'D4',
+    '',
+    'F#4',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'A4',
+    'A4',
+    'F#4',
+    'B4',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'E4',
+    'E4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    'B4',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    'E4',
+    'E4',
+    'E4',
+    'E4',
+    'E4',
+    'E4',
+    'G4',
+    '',
+    'F#4',
+    '',
+    '',
+    '',
+    'D4',
+    'E4',
+    'F#4',
+    '',
+    'D4',
+    'E4',
+    'F#4',
+    '',
+    'F#4',
+    'G4',
+    'A4',
+    '',
+    'F#4',
+    '',
+    'D4',
+    '',
+    'E4',
+    '',
+    'D4',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'A4',
+    'A4',
+    'F#4',
+    'B4',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'E4',
+    'E4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    '',
+    'F#4',
+    'B4',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'E4',
+    'E4',
+    'F#4',
+    'E4',
+    '',
+    'D4',
+    '',
+    'B4',
+    '',
+    'A4',
+    'F#4',
+    'D4',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'E4',
+    '',
+    'D4',
+    'E4',
+    '',
+    'F#4',
+    '',
+    'E4',
+    '',
+    'D4',
+    '',
+    'C#4',
+    'D4',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]
+}
+
+function countNotes(notes) {
+  return notes.reduce((acc, n) => ((acc[n] = (acc[n] || 0) + 1), acc), {})
+}
+
+// Get the frequency distribution of each note
+// console.log(countNotes(voice()))
+
+// Print the notes to play as as a string
+const pToK = invert(summertimeDetails.keybinding)
+const keys = voice().map((note) => (note ? pToK[note] : ' '))
+// console.log(keys.join('')) // TODO: break up into bars (8 notes)
+
+function invert(obj) {
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
 }

@@ -204,8 +204,7 @@ function createPiano() {
     keyObject.on('down', () => {
       const keyboard = reverseKeyCode(keyCode)
       const note = KEYBOARD_TO_PIANO[keyboard]
-      const transposed = SONG_DETAILS.transposeFunc(note)
-      synth.triggerAttackRelease(transposed, '8n')
+      synth.triggerAttackRelease(note, '8n')
 
       // Also draw a hit effect for that note
       addHitBlock(note)
@@ -305,8 +304,8 @@ export default {
       // Fill in song information before instantiating the game
       SONG_ID = this.$route.params.id || 'take-on-me'
       SONG_DETAILS = SONG_DETAILS_BY_ID[SONG_ID]
-      PIANO_TO_KEYBOARD = SONG_DETAILS.keyboard
-      KEYBOARD_TO_PIANO = invert(PIANO_TO_KEYBOARD)
+      KEYBOARD_TO_PIANO = SONG_DETAILS.keybinding
+      PIANO_TO_KEYBOARD = invert(KEYBOARD_TO_PIANO)
       NOTES = Object.keys(PIANO_TO_KEYBOARD)
 
       this.song = SONG_DETAILS
