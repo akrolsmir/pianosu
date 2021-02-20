@@ -1,17 +1,17 @@
 // Courtesy of https://pianoletternotes.blogspot.com/2018/02/take-on-me-by-ha.html
 
+import { countNotes, eigthsToArray, printKeys } from './songs/utils'
+
 // Mapped into G major, but isn't using any flats.
 // TODO: Some notes are missing or off:
 // The A's in each of the first beats should be A3 instead of A4.
 // F's should be sharps, hack around that by transcoding themto F#4.
-export const takeonmeVoice = '\
+export const takeonmeEightsInG =
+  '\
 |EECA A D| D DFFGA|GGGD C E| E EDDED|\
 |EECA A D| D DFFGA|GGGD C E| E EDDED|\
-|EECA A D| D DFFGA|GGGE C E| E EDDD |'
-
-  .split('')
-  .filter((char) => char != '|')
-  .map((char) => (char == ' ' ? '' : `${char}4`))
+|EECA A D| D DFFGA|GGGE C E| E EDDD |\
+|    C  C| BA     |   B B  | B G   E|'
 
 export function transposeToG(note) {
   const toG = {
@@ -36,22 +36,123 @@ export const takeonmeDetails = {
   youtubeOffset: 0,
 
   bpm: 145,
-  voice: takeonmeVoice,
-  transposeFunc: transposeToG,
-  keyboard: {
-    //A3: 'A',
-    // NOTE: Skip mapping A3 b/c first key is drawn based off of index in array, that
-    // way B3 will reflect where it'd be on the keyboard.
-    B3: 'A',
-    C4: 'S',
-    D4: 'D',
-    E4: 'F',
-    F4: 'J',
-    G4: 'K',
-    A4: 'L',
-    B4: ';',
-    C5: "'",
+  voice: voice(),
+  keybinding: {
+    A: 'A3',
+    S: 'B3',
+    D: 'C4',
+    F: 'D4',
+    J: 'E4',
+    K: 'F#4',
+    L: 'G4',
+    ';': 'A4',
   },
   offset: 1100,
   soundFile: 'Takeonme21.mp3',
 }
+
+function voice() {
+  // return eigthsToArray(takeonmeEightsInG).map(transposeToG)
+  return [
+    'E4',
+    'E4',
+    'C4',
+    'A3',
+    '',
+    'A3',
+    '',
+    'D4',
+    '',
+    'D4',
+    '',
+    'D4',
+    'F#4',
+    'F#4',
+    'G4',
+    'A4',
+    'G4',
+    'G4',
+    'G4',
+    'D4',
+    '',
+    'C4',
+    '',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'D4',
+    'E4',
+    'D4',
+    'E4',
+    'E4',
+    'C4',
+    'A3',
+    '',
+    'A3',
+    '',
+    'D4',
+    '',
+    'D4',
+    '',
+    'D4',
+    'F#4',
+    'F#4',
+    'G4',
+    'A4',
+    'G4',
+    'G4',
+    'G4',
+    'D4',
+    '',
+    'C4',
+    '',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'D4',
+    'E4',
+    'D4',
+    'E4',
+    'E4',
+    'C4',
+    'A3',
+    '',
+    'A3',
+    '',
+    'D4',
+    '',
+    'D4',
+    '',
+    'D4',
+    'F#4',
+    'F#4',
+    'G4',
+    'A4',
+    'G4',
+    'G4',
+    'G4',
+    'E4',
+    '',
+    'C4',
+    '',
+    'E4',
+    '',
+    'E4',
+    '',
+    'E4',
+    'D4',
+    'D4',
+    'D4',
+    '',
+  ]
+}
+
+// console.log(eigthsToArray(takeonmeEightsInG))
+// console.log(countNotes(voice()))
+// console.log(printKeys(voice()))

@@ -26,13 +26,6 @@ export const summertimeEighthsInC =
 | GGEAGEC|D DCDDCD| D EAGEC|D DCDDED|\
 | C A GEC|D DCD CD| E D C B|C       |'
 
-function eigthsToArray(eigths) {
-  return eigths
-    .split('')
-    .filter((char) => char != '|')
-    .map((char) => (char == ' ' ? '' : `${char}4`))
-}
-
 export function transposeCtoD(note) {
   const cToD = {
     A3: 'B3',
@@ -43,7 +36,7 @@ export function transposeCtoD(note) {
     F4: 'G4',
     G4: 'A4',
     A4: 'B4',
-    B4: 'C#5',
+    B4: 'C#4', // Remapped to one octave lower
   }
   return note && cToD[note]
 }
@@ -54,6 +47,7 @@ export const summertimeDetails = {
   artist: 'Maggie & Nyan',
   youtubeUrl: 'https://www.youtube.com/watch?v=ymwtuzIdhfY',
   youtubeOffset: 0,
+  // backgroundImage: 'https://cdn.awwni.me/sbm7.jpg'
 
   bpm: 125,
   keybinding: {
@@ -269,20 +263,4 @@ function voice() {
     '',
     '',
   ]
-}
-
-function countNotes(notes) {
-  return notes.reduce((acc, n) => ((acc[n] = (acc[n] || 0) + 1), acc), {})
-}
-
-// Get the frequency distribution of each note
-// console.log(countNotes(voice()))
-
-// Print the notes to play as as a string
-const pToK = invert(summertimeDetails.keybinding)
-const keys = voice().map((note) => (note ? pToK[note] : ' '))
-// console.log(keys.join('')) // TODO: break up into bars (8 notes)
-
-function invert(obj) {
-  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
 }
