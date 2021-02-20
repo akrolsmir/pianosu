@@ -136,7 +136,7 @@ function preload() {
 
 function create() {
   if (this.sound.locked) {
-    var text = this.add.text(10, 10, 'Tap to unlock audio', {
+    var text = this.add.text(560, 10, 'Press any key to start', {
       font: '16px Courier',
       fill: '#00ff00',
     })
