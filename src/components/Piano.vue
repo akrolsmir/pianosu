@@ -43,6 +43,7 @@ var config = {
 }
 
 const FALL_VELOCITY = 600 / 1000 // px/ms
+const TARGET_Y = 420
 
 /**
  * hitObj: {
@@ -53,17 +54,22 @@ const FALL_VELOCITY = 600 / 1000 // px/ms
  *   hit(time)?? => { replace with score object }
  * }
  */
-function makeHitObject(note, hitTime, /** @type {Phaser.Scene} */ scene) {
-  const rect = scene.add.rectangle(-100, -100, 30, 30, 0xaa4422)
+function makeHitObject(
+  note,
+  hitTime,
+  /** @type {Phaser.Scene} */ scene,
+  color = 0xaa4422,
+  alpha = 1
+) {
+  const rect = scene.add.rectangle(-100, -100, 30, 30, color, alpha)
   rect.setDepth(100)
   return {
     note,
     hitTime,
     rect,
     render(time) {
-      const TARGET_Y = 525 + 25
       const x = NOTES.indexOf(note) * 85 + 35 + 25
-      // At hitTime, y should be 800; at hitTime - 1s; y should be 800 - FALL_VELOCITY
+      // At hitTime, y should be TARGET_Y
       const y = TARGET_Y - (hitTime - time) * FALL_VELOCITY
       rect.setPosition(x, y)
     },
@@ -96,6 +102,9 @@ function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     },
     pause() {
       pause = scene.time.now
+    },
+    isPaused() {
+      return pause != 0
     },
     // Positive offsetMs = fast forward, negative = rewind
     // If smearMs is set, spread the adjustment over that interval;
@@ -207,7 +216,13 @@ function createPiano() {
       synth.triggerAttackRelease(note, '8n')
 
       // Also draw a hit effect for that note
-      addHitBlock(note)
+      if (SEEKBAR.isPaused()) {
+        addHitEffect(note)
+      }
+      // If not paused, record this note
+      else {
+        HIT_OBJS.push(makeHitObject(note, SEEKBAR.time(), this, 0x4488aa))
+      }
     })
   }
 
@@ -251,20 +266,18 @@ function createPiano() {
     }
   })
 
-  function addHitBlock(note) {
-    const x = NOTES.indexOf(note) * 85 + 35
-    const y = 525
-    const rect = new Phaser.Geom.Rectangle(x, y, 50, 50)
-    const graphics = scene.add.graphics()
-    graphics.fillStyle(0x4488aa)
-    graphics.fillRectShape(rect)
-    setTimeout(() => graphics.destroy(), 100)
+  function addHitEffect(note) {
+    const x = NOTES.indexOf(note) * 85 + 35 + 25
+    const y = TARGET_Y
+    const rect = scene.add.rectangle(x, y, 30, 30, 0x4488aa)
+    rect.setDepth(50)
+    setTimeout(() => rect.destroy(), 100)
   }
 
   Object.keys(PIANO_TO_KEYBOARD).map(addTargetBlock)
   function addTargetBlock(note) {
     const x = NOTES.indexOf(note) * 85 + 35 + 25
-    const y = 525 + 25
+    const y = TARGET_Y
     scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
     scene.add.text(x - 10, y - 15, PIANO_TO_KEYBOARD[note], { font: '32px' })
   }
