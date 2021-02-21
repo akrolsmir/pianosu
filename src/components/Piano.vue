@@ -137,7 +137,7 @@ function createPiano() {
   const playKey = scene.input.keyboard.addKey('P')
   const music = scene.sound.add(CO.SONG_ID, { volume: 0.3 })
   playKey.on('down', () => {
-    if (!music.isPlaying) {
+    if (CO.SEEKBAR.isPaused()) {
       CO.SEEKBAR.resume()
       music.play(CO.SEEKBAR.playConfig())
     } else {
@@ -150,7 +150,7 @@ function createPiano() {
   // Move song back by 2 sec
   const rewindKey = scene.input.keyboard.addKey('R')
   rewindKey.on('down', async () => {
-    if (music.isPlaying) {
+    if (!CO.SEEKBAR.isPaused()) {
       music.pause()
       CO.SEEKBAR.pause()
     }
@@ -160,7 +160,7 @@ function createPiano() {
   // Fast forward by 2 sec
   const ffKey = scene.input.keyboard.addKey('T')
   ffKey.on('down', async () => {
-    if (music.isPlaying) {
+    if (!CO.SEEKBAR.isPaused()) {
       music.pause()
       CO.SEEKBAR.pause()
     }
