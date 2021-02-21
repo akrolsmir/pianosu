@@ -52,18 +52,21 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
       return pause != 0
     },
     // Positive offsetMs = fast forward, negative = rewind
-    // If smearMs is set, spread the adjustment over that interval;
+    // If smearMs is set, spread the adjustment over that interval
     adjust(offsetMs, smearMs = 0) {
+      // Don't rewind beyond 0ms
+      const offset = Math.max(-this.time(), offsetMs)
       if (smearMs === 0) {
-        start -= offsetMs
+        start -= offset
         return
       }
 
       const DELAY_MS = 10
-      const adjustment = offsetMs / (smearMs / DELAY_MS)
+      const adjustment = offset / (smearMs / DELAY_MS)
       scene.time.addEvent({
         delay: DELAY_MS,
-        repeat: smearMs / DELAY_MS,
+        // `repeat: n` will trigger n + 1 events
+        repeat: smearMs / DELAY_MS - 1,
         callback: () => (start -= adjustment),
       })
     },
