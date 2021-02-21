@@ -47,7 +47,7 @@ export const summertimeDetails = {
   artist: 'Maggie & Nyan',
   youtubeUrl: 'https://www.youtube.com/watch?v=ymwtuzIdhfY',
   youtubeOffset: 0,
-  // backgroundImage: 'https://cdn.awwni.me/sbm7.jpg'
+  backgroundImage: 'summertime.jpg',
 
   bpm: 125,
   keybinding: {

@@ -7,21 +7,21 @@
 
 <script>
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
-import Phaser, { Scene } from 'phaser'
+import Phaser from 'phaser'
 import * as Tone from 'tone'
 import { summertimeDetails } from '../songs/summertime'
-import { invert } from '../songs/utils'
 import { takeonmeDetails } from '../songs/take-on-me'
 import { passConstants, makeHitObject } from './hit-object.js'
 import { makeSeekbar } from './seekbar.js'
 import SongsList from './SongsList.vue'
 
-var config = {
+const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
   backgroundColor: '#2d2d2d',
   scene: {
+    key: 'main-scene',
     preload: preload,
     create: create,
     extend: {
@@ -41,7 +41,6 @@ const CO = {
   FALL_VELOCITY: 600 / 1000, // px/ms
   TARGET_Y: 420,
   SEEKBAR: {},
-  SEEK_TEXT: {},
 
   // Changes betwen songs
   SONG_ID: undefined,
@@ -53,38 +52,30 @@ const CO = {
 // Time is msecs, delta is time since last update
 function update(_time, _delta) {
   CO.SEEKBAR.renderObjs()
-  CO.SEEK_TEXT.text = CO.SEEKBAR.textTime()
 }
 
 function preload() {
   this.load.setPath('/assets/piano')
   this.load.atlas('piano', 'piano.png', 'piano.json')
   this.load.audio(CO.SONG_ID, CO.SONG_DETAILS.soundFile)
+  this.load.image('backgroundImage', CO.SONG_DETAILS.backgroundImage)
 }
 
 function create() {
-  if (this.sound.locked) {
-    var text = this.add.text(560, 10, 'Press any key to start', {
-      font: '16px Courier',
-      fill: '#00ff00',
-    })
+  /** @type {Phaser.Scene} */
+  const scene = this
 
-    this.sound.once(
-      'unlocked',
-      function () {
-        text.destroy()
-        this.createPiano()
-      },
-      this
-    )
-  } else {
-    this.createPiano()
-  }
+  // Draw and darken the background
+  const bg = scene.add.image(0, 0, 'backgroundImage').setOrigin(0)
+  bg.scale = 0.5
+  const darken = scene.add
+    .rectangle(0, 0, config.width, config.height, 0x000000, 0.4)
+    .setOrigin(0) // Set origin to (0, 0) instead of rect center
+
+  this.createPiano()
 
   // Init seekbar
   CO.SEEKBAR = makeSeekbar(this)
-  CO.SEEK_TEXT = this.add.text(10, 10, CO.SEEKBAR.time())
-  CO.SEEK_TEXT.setDepth(50)
 
   // Initialize the hit objects for this song
   passConstants(CO)
@@ -103,15 +94,6 @@ function createPiano() {
 
   CO.SYNTH = new Tone.PolySynth(Tone.Synth).toDestination()
 
-  // Draw the piano keys background. TODO: Could be static image
-  const x = 100
-  const y = 0
-  scene.add.image(x, y, 'piano', 'panel').setOrigin(0)
-  for (let i = 1; i <= 12; i++) {
-    const singleKey = scene.add.image(x, y, 'piano', `key${i}`)
-    singleKey.setOrigin(0)
-  }
-
   // Play white notes on keypress
   // Keycodes at https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyCodes.html
   for (const keyCode of Object.keys(CO.KEYBOARD_TO_PIANO)) {
@@ -127,7 +109,7 @@ function createPiano() {
       // If not paused, record this note
       else {
         CO.SEEKBAR.playObj(
-          makeHitObject(note, CO.SEEKBAR.time(), this, 0x4488aa)
+          makeHitObject(note, CO.SEEKBAR.time(), this, 0x66aacc)
         )
       }
     })
@@ -170,7 +152,7 @@ function createPiano() {
   function addHitEffect(note) {
     const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
     const y = CO.TARGET_Y
-    const rect = scene.add.rectangle(x, y, 30, 30, 0x4488aa)
+    const rect = scene.add.rectangle(x, y, 30, 30, 0x66aacc)
     rect.setDepth(50)
     setTimeout(() => rect.destroy(), 100)
   }
@@ -184,7 +166,10 @@ function createPiano() {
     const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
     const y = CO.TARGET_Y
     scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
+
     scene.add.text(x - 10, y - 15, keylabel(keyCode), { font: '32px' })
+    scene.add.line(0, 0, x - 42, 0, x - 42, CO.TARGET_Y * 2 + 50, 0xaaccee)
+    scene.add.line(0, 0, x + 42, 0, x + 42, CO.TARGET_Y * 2 + 50, 0xaaccee)
   }
 }
 

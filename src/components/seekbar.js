@@ -7,6 +7,12 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
   let pause = 1 // Last pause in ms; begin in paused state
   const songObjs = []
   const playedObjs = []
+
+  const BAR = scene.add.rectangle(0, 560, 800, 40, 0x002244, 0.5).setOrigin(0)
+
+  const SEEK_TEXT = scene.add.text(10, 572, '')
+  const INSTRUCTION_TEXT = scene.add.text(560, 572, 'Press "P" to play')
+
   return {
     time() {
       // TODO: prevent rewinding past 0 with Math.max(0, ...)?
@@ -29,6 +35,8 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
       for (const hitObj of playedObjs) {
         hitObj.schedule(this.time())
       }
+
+      INSTRUCTION_TEXT.text = ''
     },
     songObj(hitObj) {
       songObjs.push(hitObj)
@@ -39,6 +47,8 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     renderObjs() {
       songObjs.forEach((hitObj) => hitObj.render(this.time()))
       playedObjs.forEach((hitObj) => hitObj.render(this.time()))
+
+      SEEK_TEXT.text = this.textTime()
     },
     pause() {
       pause = scene.time.now
@@ -47,6 +57,8 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
       for (const hitObj of playedObjs) {
         hitObj.unschedule()
       }
+
+      INSTRUCTION_TEXT.text = 'Press "P" to resume'
     },
     isPaused() {
       return pause != 0

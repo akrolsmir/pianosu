@@ -35,6 +35,7 @@ export const takeonmeDetails = {
   artist: 'a-ha',
   youtubeUrl: 'https://www.youtube.com/watch?v=djV11Xbc914',
   youtubeOffset: 0,
+  backgroundImage: 'take-on-me.jpg',
 
   bpm: 145,
   voice: voice(),
@@ -47,6 +48,7 @@ export const takeonmeDetails = {
     K: 'F#4',
     L: 'G4',
     SEMICOLON: 'A4',
+    QUOTES: 'B4',
   },
   soundFile: 'Takeonme21.mp3',
   offset: 1100,

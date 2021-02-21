@@ -17,7 +17,7 @@ export function makeHitObject(
   note,
   hitTime,
   /** @type {Phaser.Scene} */ scene,
-  color = 0xaa4422,
+  color = 0xcccccc,
   alpha = 1
 ) {
   const rect = scene.add.rectangle(-100, -100, 30, 30, color, alpha)
