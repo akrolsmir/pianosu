@@ -1,6 +1,6 @@
 <script>
-import { summertimeDetails } from '../s15v-notes.js'
-import { takeonmeDetails } from '../takeonme-notes.js'
+import { summertimeDetails } from '../songs/summertime.js'
+import { takeonmeDetails } from '../songs/take-on-me.js'
 
 export const SONGS = [summertimeDetails, takeonmeDetails]
 

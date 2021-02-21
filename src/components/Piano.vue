@@ -9,9 +9,9 @@
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
 import Phaser, { Scene } from 'phaser'
 import * as Tone from 'tone'
-import { summertimeDetails } from '../s15v-notes'
+import { summertimeDetails } from '../songs/summertime'
 import { invert } from '../songs/utils'
-import { takeonmeDetails } from '../takeonme-notes'
+import { takeonmeDetails } from '../songs/take-on-me'
 import { passConstants, makeHitObject } from './hit-object.js'
 import { makeSeekbar } from './seekbar.js'
 import SongsList from './SongsList.vue'

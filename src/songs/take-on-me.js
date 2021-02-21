@@ -1,6 +1,6 @@
 // Courtesy of https://pianoletternotes.blogspot.com/2018/02/take-on-me-by-ha.html
 
-import { countNotes, eigthsToArray, printKeys } from './songs/utils'
+import { countNotes, eigthsToArray, printKeys } from './utils'
 
 // Mapped into G major, but isn't using any flats.
 // TODO: Some notes are missing or off:
@@ -11,19 +11,20 @@ export const takeonmeEightsInG =
 |EECA A D| D DFFGA|GGGD C E| E EDDED|\
 |EECA A D| D DFFGA|GGGD C E| E EDDED|\
 |EECA A D| D DFFGA|GGGE C E| E EDDD |\
-|    C  C| BA     |   B B  | B G   E|'
+|        |C  C BA |        | BBB  BG|\
+|   E| AE D C | CCB    |   B  CB|'
 
 export function transposeToG(note) {
   const toG = {
-    B3: 'B3',
+    // B3: 'B3',
     C4: 'C4',
     D4: 'D4',
     E4: 'E4',
     F4: 'F#4',
     G4: 'G4',
     A4: 'A4',
-    B4: 'B4',
-    C5: 'C4',
+    B4: 'B3',
+    // C5: 'C4',
   }
   return note && toG[note]
 }
@@ -45,10 +46,12 @@ export const takeonmeDetails = {
     J: 'E4',
     K: 'F#4',
     L: 'G4',
-    ';': 'A4',
+    SEMICOLON: 'A4',
   },
-  offset: 1100,
   soundFile: 'Takeonme21.mp3',
+  offset: 1100,
+  // soundFile: 'Takeonme60.ogg',
+  // offset: 50,
 }
 
 function voice() {

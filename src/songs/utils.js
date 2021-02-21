@@ -14,7 +14,7 @@ export function countNotes(notes) {
 
 // Print the notes to play as as a string
 export function printKeys(keybinding, notes) {
-  const pToK = invert(summertimeDetails.keybinding)
+  const pToK = invert(keybinding)
   const keys = notes.map((note) => (note ? pToK[note] : ' '))
   // TODO: break up into bars (8 notes)
   return keys.join('')
