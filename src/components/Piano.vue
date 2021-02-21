@@ -10,23 +10,14 @@
 import Phaser, { Scene } from 'phaser'
 import * as Tone from 'tone'
 import { summertimeDetails } from '../s15v-notes'
+import { invert } from '../songs/utils'
 import { takeonmeDetails } from '../takeonme-notes'
+import { passConstants, makeHitObject } from './hit-object.js'
+import { makeSeekbar } from './seekbar.js'
 import SongsList from './SongsList.vue'
-
-// TODO unlowercase, as these are no longer constants
-let SONG_ID
-let SONG_DETAILS
-let PIANO_TO_KEYBOARD
-let KEYBOARD_TO_PIANO
-let NOTES
-
-function invert(obj) {
-  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]))
-}
 
 var config = {
   type: Phaser.AUTO,
-  parent: 'phaser-example',
   width: 800,
   height: 600,
   backgroundColor: '#2d2d2d',
@@ -42,138 +33,34 @@ var config = {
   parent: 'gameDiv',
 }
 
-const FALL_VELOCITY = 600 / 1000 // px/ms
-const TARGET_Y = 420
+// Global config and constants
+const CO = {
+  // Same for all songs
+  /** @type {Phaser.Scene} */ SCENE: undefined,
+  /** @type {Tone.PolySynth} */ SYNTH: undefined,
+  FALL_VELOCITY: 600 / 1000, // px/ms
+  TARGET_Y: 420,
+  SEEKBAR: {},
+  SEEK_TEXT: {},
 
-/**
- * hitObj: {
- *   note: 'D' // or 1, or 'F#4'?
- *   hitTime: 12345 // ms, when it should be hit
- *   rect: Phaser.GameObjects.Rectangle ref
- *   render(time) => { adjust rect's position }
- *   hit(time)?? => { replace with score object }
- * }
- */
-function makeHitObject(
-  note,
-  hitTime,
-  /** @type {Phaser.Scene} */ scene,
-  color = 0xaa4422,
-  alpha = 1
-) {
-  const rect = scene.add.rectangle(-100, -100, 30, 30, color, alpha)
-  rect.setDepth(100)
-
-  let replayEvent
-
-  return {
-    note,
-    hitTime,
-    rect,
-    render(time) {
-      const x = NOTES.indexOf(note) * 85 + 35 + 25
-      // At hitTime, y should be TARGET_Y
-      const y = TARGET_Y - (hitTime - time) * FALL_VELOCITY
-      rect.setPosition(x, y)
-    },
-    // Schedule this note to be replayed when seekbar gets there
-    schedule(seekbarTime) {
-      const delay = hitTime - seekbarTime
-      if (delay >= 0) {
-        replayEvent = scene.time.addEvent({
-          delay,
-          callback: () => {
-            synth.triggerAttackRelease(note, '8n')
-          },
-        })
-      }
-    },
-    unschedule() {
-      if (replayEvent) {
-        replayEvent.destroy()
-      }
-    },
-  }
+  // Changes betwen songs
+  SONG_ID: undefined,
+  SONG_DETAILS: undefined,
+  PIANO_TO_KEYBOARD: undefined,
+  KEYBOARD_TO_PIANO: undefined,
+  NOTES: undefined,
 }
-
-let HIT_OBJS
-let PLAYED_OBJS
-
-// TODO: Does it make sense to use Phaser's built in timeline?
-function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
-  // TODO synchronization issues when using these...?
-  let start = 0 // Last start in ms
-  let pause = 1 // Last pause in ms; begin in paused state
-  return {
-    time() {
-      // TODO: prevent rewinding past 0 with Math.max(0, ...)?
-      return ((pause || scene.time.now) - start) * RATE
-    },
-    textTime() {
-      // Format as "MM:SS.mmm"
-      const nice = (f, lead) => `${Math.floor(f)}`.padStart(lead, '0')
-      const min = nice(Math.floor(this.time() / 1000 / 60), 2)
-      const sec = nice((this.time() / 1000) % 60, 2)
-      const msec = nice((this.time() % 1000) - 1, 3)
-      return `${min}:${sec}.${msec}`
-    },
-    resume() {
-      const pausedTime = scene.time.now - pause
-      start += pausedTime
-      pause = 0
-
-      // Schedule each PLAYED_OBJ for replay
-      for (const hitObj of PLAYED_OBJS) {
-        hitObj.schedule(this.time())
-      }
-    },
-    pause() {
-      pause = scene.time.now
-
-      // Cancel all replays
-      for (const hitObj of PLAYED_OBJS) {
-        hitObj.unschedule()
-      }
-    },
-    isPaused() {
-      return pause != 0
-    },
-    // Positive offsetMs = fast forward, negative = rewind
-    // If smearMs is set, spread the adjustment over that interval;
-    adjust(offsetMs, smearMs = 0) {
-      if (smearMs === 0) {
-        start -= offsetMs
-        return
-      }
-
-      const DELAY_MS = 10
-      const adjustment = offsetMs / (smearMs / DELAY_MS)
-      scene.time.addEvent({
-        delay: DELAY_MS,
-        repeat: smearMs / DELAY_MS,
-        callback: () => (start -= adjustment),
-      })
-    },
-    playConfig() {
-      return { seek: this.time() / 1000, rate: RATE }
-    },
-  }
-}
-let SEEKBAR
-let SEEK_TEXT
-let RATE = 1 // TODO: Rate changes should shift pitches too
 
 // Time is msecs, delta is time since last update
-function update(time, delta) {
-  HIT_OBJS.forEach((hitObj) => hitObj.render(SEEKBAR.time()))
-  PLAYED_OBJS.forEach((hitObj) => hitObj.render(SEEKBAR.time()))
-  SEEK_TEXT.text = SEEKBAR.textTime()
+function update(_time, _delta) {
+  CO.SEEKBAR.renderObjs()
+  CO.SEEK_TEXT.text = CO.SEEKBAR.textTime()
 }
 
 function preload() {
   this.load.setPath('/assets/piano')
   this.load.atlas('piano', 'piano.png', 'piano.json')
-  this.load.audio(SONG_ID, SONG_DETAILS.soundFile)
+  this.load.audio(CO.SONG_ID, CO.SONG_DETAILS.soundFile)
 }
 
 function create() {
@@ -195,29 +82,27 @@ function create() {
     this.createPiano()
   }
 
-  // Initialize the hit objects for this song
-  const tune = SONG_DETAILS.voice
-  HIT_OBJS = []
-  for (const [i, note] of tune.entries()) {
-    const eighthNoteMs = (60 * 1000) / SONG_DETAILS.bpm / 2
-    const time = SONG_DETAILS.offset + eighthNoteMs * i
-    // TODO: maybe handle simultaneous notes
-    HIT_OBJS.push(makeHitObject(note, time, this))
-  }
-  PLAYED_OBJS = []
-
   // Init seekbar
-  SEEKBAR = makeSeekbar(this)
-  SEEK_TEXT = this.add.text(10, 10, SEEKBAR.time())
-  SEEK_TEXT.setDepth(50)
-}
+  CO.SEEKBAR = makeSeekbar(this)
+  CO.SEEK_TEXT = this.add.text(10, 10, CO.SEEKBAR.time())
+  CO.SEEK_TEXT.setDepth(50)
 
-/** @type {Tone.PolySynth} */
-let synth
+  // Initialize the hit objects for this song
+  passConstants(CO)
+  const tune = CO.SONG_DETAILS.voice
+  for (const [i, note] of tune.entries()) {
+    const eighthNoteMs = (60 * 1000) / CO.SONG_DETAILS.bpm / 2
+    const time = CO.SONG_DETAILS.offset + eighthNoteMs * i
+    // TODO: maybe handle simultaneous notes
+    CO.SEEKBAR.songObj(makeHitObject(note, time, this))
+  }
+}
 
 function createPiano() {
   /** @type {Phaser.Scene} */
   const scene = this
+
+  CO.SYNTH = new Tone.PolySynth(Tone.Synth).toDestination()
 
   // Draw the piano keys background. TODO: Could be static image
   const x = 100
@@ -229,9 +114,8 @@ function createPiano() {
   }
 
   // Play white notes on keypress
-
-  // Map keyboard buttons to the right keycode
   // See https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyCodes.html
+  // TODO: Kill translation layer
   const keyMap = { ';': 'SEMICOLON', "'": 'QUOTES' }
   function keyCode(keyboard) {
     return keyMap[keyboard] || keyboard
@@ -239,36 +123,37 @@ function createPiano() {
   function reverseKeyCode(code) {
     return invert(keyMap)[code] || code
   }
-  const keyboardString = Object.keys(KEYBOARD_TO_PIANO).map(keyCode).join(',')
-  const keyObjects = scene.input.keyboard.addKeys(keyboardString)
+  const keyCodes = Object.keys(CO.KEYBOARD_TO_PIANO).map(keyCode).join(',')
+  const keyObjects = scene.input.keyboard.addKeys(keyCodes)
 
-  synth = new Tone.PolySynth(Tone.Synth).toDestination()
   for (const [keyCode, keyObject] of Object.entries(keyObjects)) {
     keyObject.on('down', () => {
       const keyboard = reverseKeyCode(keyCode)
-      const note = KEYBOARD_TO_PIANO[keyboard]
-      synth.triggerAttackRelease(note, '8n')
+      const note = CO.KEYBOARD_TO_PIANO[keyboard]
+      CO.SYNTH.triggerAttackRelease(note, '8n')
 
       // Also draw a hit effect for that note
-      if (SEEKBAR.isPaused()) {
+      if (CO.SEEKBAR.isPaused()) {
         addHitEffect(note)
       }
       // If not paused, record this note
       else {
-        PLAYED_OBJS.push(makeHitObject(note, SEEKBAR.time(), this, 0x4488aa))
+        CO.SEEKBAR.playObj(
+          makeHitObject(note, CO.SEEKBAR.time(), this, 0x4488aa)
+        )
       }
     })
   }
 
   // Play controls
   const playKey = scene.input.keyboard.addKey('P')
-  const music = scene.sound.add(SONG_ID, { volume: 0.3 })
+  const music = scene.sound.add(CO.SONG_ID, { volume: 0.3 })
   playKey.on('down', () => {
     if (!music.isPlaying) {
-      SEEKBAR.resume()
-      music.play(SEEKBAR.playConfig())
+      CO.SEEKBAR.resume()
+      music.play(CO.SEEKBAR.playConfig())
     } else {
-      SEEKBAR.pause()
+      CO.SEEKBAR.pause()
       music.pause()
     }
   })
@@ -282,11 +167,11 @@ function createPiano() {
       music.pause()
       // TODO Theoretically should be able to pause and awesome rewind, but...
       // Complicated timeline logic so ignore for now
-      SEEKBAR.adjust(-2000)
-      music.play(SEEKBAR.playConfig())
+      CO.SEEKBAR.adjust(-2000)
+      music.play(CO.SEEKBAR.playConfig())
     } else {
       // AWESOME REWIND
-      SEEKBAR.adjust(-2000, 200)
+      CO.SEEKBAR.adjust(-2000, 200)
     }
   })
 
@@ -295,27 +180,27 @@ function createPiano() {
   ffKey.on('down', async () => {
     if (music.isPlaying) {
       music.pause()
-      SEEKBAR.adjust(2000)
-      music.play(SEEKBAR.playConfig())
+      CO.SEEKBAR.adjust(2000)
+      music.play(CO.SEEKBAR.playConfig())
     } else {
-      SEEKBAR.adjust(2000, 200)
+      CO.SEEKBAR.adjust(2000, 200)
     }
   })
 
   function addHitEffect(note) {
-    const x = NOTES.indexOf(note) * 85 + 35 + 25
-    const y = TARGET_Y
+    const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
+    const y = CO.TARGET_Y
     const rect = scene.add.rectangle(x, y, 30, 30, 0x4488aa)
     rect.setDepth(50)
     setTimeout(() => rect.destroy(), 100)
   }
 
-  Object.keys(PIANO_TO_KEYBOARD).map(addTargetBlock)
+  Object.keys(CO.PIANO_TO_KEYBOARD).map(addTargetBlock)
   function addTargetBlock(note) {
-    const x = NOTES.indexOf(note) * 85 + 35 + 25
-    const y = TARGET_Y
+    const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
+    const y = CO.TARGET_Y
     scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
-    scene.add.text(x - 10, y - 15, PIANO_TO_KEYBOARD[note], { font: '32px' })
+    scene.add.text(x - 10, y - 15, CO.PIANO_TO_KEYBOARD[note], { font: '32px' })
   }
 }
 
@@ -351,13 +236,13 @@ export default {
       }
 
       // Fill in song information before instantiating the game
-      SONG_ID = this.$route.params.id || 'take-on-me'
-      SONG_DETAILS = SONG_DETAILS_BY_ID[SONG_ID]
-      KEYBOARD_TO_PIANO = SONG_DETAILS.keybinding
-      PIANO_TO_KEYBOARD = invert(KEYBOARD_TO_PIANO)
-      NOTES = Object.keys(PIANO_TO_KEYBOARD)
+      CO.SONG_ID = this.$route.params.id || 'summertime'
+      CO.SONG_DETAILS = SONG_DETAILS_BY_ID[CO.SONG_ID]
+      CO.KEYBOARD_TO_PIANO = CO.SONG_DETAILS.keybinding
+      CO.PIANO_TO_KEYBOARD = invert(CO.KEYBOARD_TO_PIANO)
+      CO.NOTES = Object.keys(CO.PIANO_TO_KEYBOARD)
 
-      this.song = SONG_DETAILS
+      this.song = CO.SONG_DETAILS
 
       if (game) {
         // Remove old game if this is a reload
