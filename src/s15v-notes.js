@@ -58,11 +58,11 @@ export const summertimeDetails = {
     J: 'G4',
     K: 'A4',
     L: 'B4',
-    ';': 'C#5',
-    "'": 'D5',
+    SEMICOLON: 'C#5',
+    QUOTES: 'D5',
   },
   voice: voice(),
-  offset: 920,
+  offset: 910,
   soundFile: 'Summertime45.mp3',
 }
 

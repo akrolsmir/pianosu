@@ -46,7 +46,6 @@ const CO = {
   // Changes betwen songs
   SONG_ID: undefined,
   SONG_DETAILS: undefined,
-  PIANO_TO_KEYBOARD: undefined,
   KEYBOARD_TO_PIANO: undefined,
   NOTES: undefined,
 }
@@ -114,22 +113,11 @@ function createPiano() {
   }
 
   // Play white notes on keypress
-  // See https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyCodes.html
-  // TODO: Kill translation layer
-  const keyMap = { ';': 'SEMICOLON', "'": 'QUOTES' }
-  function keyCode(keyboard) {
-    return keyMap[keyboard] || keyboard
-  }
-  function reverseKeyCode(code) {
-    return invert(keyMap)[code] || code
-  }
-  const keyCodes = Object.keys(CO.KEYBOARD_TO_PIANO).map(keyCode).join(',')
-  const keyObjects = scene.input.keyboard.addKeys(keyCodes)
-
-  for (const [keyCode, keyObject] of Object.entries(keyObjects)) {
+  // Keycodes at https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyCodes.html
+  for (const keyCode of Object.keys(CO.KEYBOARD_TO_PIANO)) {
+    const keyObject = scene.input.keyboard.addKey(keyCode)
     keyObject.on('down', () => {
-      const keyboard = reverseKeyCode(keyCode)
-      const note = CO.KEYBOARD_TO_PIANO[keyboard]
+      const note = CO.KEYBOARD_TO_PIANO[keyCode]
       CO.SYNTH.triggerAttackRelease(note, '8n')
 
       // Also draw a hit effect for that note
@@ -195,12 +183,16 @@ function createPiano() {
     setTimeout(() => rect.destroy(), 100)
   }
 
-  Object.keys(CO.PIANO_TO_KEYBOARD).map(addTargetBlock)
-  function addTargetBlock(note) {
+  function keylabel(keyCode) {
+    const keymap = { SEMICOLON: ';', QUOTES: "'" }
+    return keymap[keyCode] || keyCode
+  }
+  Object.entries(CO.KEYBOARD_TO_PIANO).map(addTargetBlock)
+  function addTargetBlock([keyCode, note]) {
     const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
     const y = CO.TARGET_Y
     scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
-    scene.add.text(x - 10, y - 15, CO.PIANO_TO_KEYBOARD[note], { font: '32px' })
+    scene.add.text(x - 10, y - 15, keylabel(keyCode), { font: '32px' })
   }
 }
 
@@ -239,8 +231,7 @@ export default {
       CO.SONG_ID = this.$route.params.id || 'summertime'
       CO.SONG_DETAILS = SONG_DETAILS_BY_ID[CO.SONG_ID]
       CO.KEYBOARD_TO_PIANO = CO.SONG_DETAILS.keybinding
-      CO.PIANO_TO_KEYBOARD = invert(CO.KEYBOARD_TO_PIANO)
-      CO.NOTES = Object.keys(CO.PIANO_TO_KEYBOARD)
+      CO.NOTES = Object.values(CO.KEYBOARD_TO_PIANO)
 
       this.song = CO.SONG_DETAILS
 
