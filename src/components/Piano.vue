@@ -147,20 +147,14 @@ function createPiano() {
   })
 
   // Rewind/FF while unpaused doesn't replay notes correctly...
-  // TODO: Either overhaul timeline logic, or just disable while unpaused
   // Move song back by 2 sec
   const rewindKey = scene.input.keyboard.addKey('R')
   rewindKey.on('down', async () => {
     if (music.isPlaying) {
       music.pause()
-      // TODO Theoretically should be able to pause and awesome rewind, but...
-      // Complicated timeline logic so ignore for now
-      CO.SEEKBAR.adjust(-2000)
-      music.play(CO.SEEKBAR.playConfig())
-    } else {
-      // AWESOME REWIND
-      CO.SEEKBAR.adjust(-2000, 200)
+      CO.SEEKBAR.pause()
     }
+    CO.SEEKBAR.adjust(-2000, 200)
   })
 
   // Fast forward by 2 sec
@@ -168,11 +162,9 @@ function createPiano() {
   ffKey.on('down', async () => {
     if (music.isPlaying) {
       music.pause()
-      CO.SEEKBAR.adjust(2000)
-      music.play(CO.SEEKBAR.playConfig())
-    } else {
-      CO.SEEKBAR.adjust(2000, 200)
+      CO.SEEKBAR.pause()
     }
+    CO.SEEKBAR.adjust(2000, 200)
   })
 
   function addHitEffect(note) {
