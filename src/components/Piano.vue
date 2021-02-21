@@ -220,6 +220,9 @@ export default {
   mounted() {
     this.loadSongFromRoute()
   },
+  beforeUnmount() {
+    this.cleanup()
+  },
   methods: {
     loadSongFromRoute() {
       const SONG_DETAILS_BY_ID = {
@@ -235,12 +238,14 @@ export default {
 
       this.song = CO.SONG_DETAILS
 
+      this.cleanup() // Remove old game if this is a reload
+      game = new Phaser.Game(config)
+    },
+    cleanup() {
       if (game) {
-        // Remove old game if this is a reload
         // See: https://stackoverflow.com/a/59617457/1222351
         game.destroy(true, false)
       }
-      game = new Phaser.Game(config)
     },
   },
 }
