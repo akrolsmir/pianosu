@@ -134,6 +134,11 @@ function createPiano() {
     }
   })
 
+  // Resnap all notes
+  scene.input.keyboard.addKey('Q').on('down', () => {
+    CO.SEEKBAR.resnapPlayed()
+  })
+
   // Rewind/FF while unpaused doesn't replay notes correctly...
   // Move song back by 2 sec
   const rewindKey = scene.input.keyboard.addKey('R')

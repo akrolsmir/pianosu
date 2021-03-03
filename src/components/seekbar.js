@@ -47,6 +47,9 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     exportPlayed() {
       return playedObjs.map((hitObj) => hitObj.toHit())
     },
+    resnapPlayed() {
+      playedObjs.forEach((hitObj) => hitObj.resnap())
+    },
     renderObjs() {
       songObjs.forEach((hitObj) => hitObj.render(this.time()))
       playedObjs.forEach((hitObj) => hitObj.render(this.time()))
