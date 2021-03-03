@@ -52,5 +52,9 @@ export function makeHitObject(
         replayEvent.destroy()
       }
     },
+    // Returns the serializable version
+    toHit() {
+      return { note, time: hitTime }
+    },
   }
 }

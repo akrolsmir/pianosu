@@ -61,9 +61,33 @@ export const summertimeDetails = {
     SEMICOLON: 'C#5',
     QUOTES: 'D5',
   },
-  voice: voice(),
+  track: trackFromVoice(),
   offset: 910,
   soundFile: 'Summertime45.mp3',
+}
+
+// A track is a list of hits; a hit is { time: 123, note: 'A4' }
+// More hit props to come: type (tap/slider/avoid/repeat)? volume? attack? instrument (maybe that's a track)?
+
+function trackFromVoice() {
+  const bpm = 125
+  const eigthIntervalMs = (60 * 1000) / (bpm * 2) // 60k ms/m / 2bpm 8ths/m
+  const offset = 910
+
+  const track = []
+  for (const [i, note] of voice().entries()) {
+    if (note) {
+      const time = offset + i * eigthIntervalMs
+      track.push({ time, note })
+    }
+  }
+  return track
+
+  // Equivalently:
+  // return voice()
+  //   .entries()
+  //   .filter(_i, (note) => note)
+  //   .map((i, note) => ({ note, time: offset + i * eigthIntervalMs }))
 }
 
 // To regenerate voice from the readable summertimeEightsInC:

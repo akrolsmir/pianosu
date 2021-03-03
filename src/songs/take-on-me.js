@@ -38,7 +38,7 @@ export const takeonmeDetails = {
   backgroundImage: 'take-on-me.jpg',
 
   bpm: 145,
-  voice: voice(),
+  track: trackFromVoice(),
   keybinding: {
     A: 'A3',
     S: 'B3',
@@ -54,6 +54,27 @@ export const takeonmeDetails = {
   offset: 1100,
   // soundFile: 'Takeonme60.ogg',
   // offset: 50,
+}
+
+function trackFromVoice() {
+  const bpm = 145
+  const eigthIntervalMs = (60 * 1000) / (bpm * 2) // 60k ms/m / 2bpm 8ths/m
+  const offset = 1100
+
+  const track = []
+  for (const [i, note] of voice().entries()) {
+    if (note) {
+      const time = offset + i * eigthIntervalMs
+      track.push({ time, note })
+    }
+  }
+  return track
+
+  // Equivalently:
+  // return voice()
+  //   .entries()
+  //   .filter(_i, (note) => note)
+  //   .map((i, note) => ({ note, time: offset + i * eigthIntervalMs }))
 }
 
 function voice() {

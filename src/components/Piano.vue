@@ -90,11 +90,7 @@ function create() {
 
   // Initialize the hit objects for this song
   passConstants(CO)
-  const tune = CO.SONG_DETAILS.voice
-  for (const [i, note] of tune.entries()) {
-    const eighthNoteMs = (60 * 1000) / CO.SONG_DETAILS.bpm / 2
-    const time = CO.SONG_DETAILS.offset + eighthNoteMs * i
-    // TODO: maybe handle simultaneous notes
+  for (const { note, time } of CO.SONG_DETAILS.track) {
     CO.SEEKBAR.songObj(makeHitObject(note, time, this))
   }
 }
@@ -119,9 +115,8 @@ function createPiano() {
       }
       // If not paused, record this note
       else {
-        CO.SEEKBAR.playObj(
-          makeHitObject(note, CO.SEEKBAR.time(), this, 0x66aacc)
-        )
+        const time = Math.round(CO.SEEKBAR.time()) // <0.5ms shift is not detectable
+        CO.SEEKBAR.playObj(makeHitObject(note, time, this, 0x66aacc))
       }
     })
   }
