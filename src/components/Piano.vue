@@ -40,9 +40,10 @@ const CO = {
   /** @type {Tone.PolySynth} */ SYNTH: undefined,
   FALL_VELOCITY: 333 / 1000, // px/ms
   TARGET_Y: 420,
+  OFFSET_X: (note) => CO.NOTES.indexOf(note) * 40 + 400,
   SEEKBAR: {},
 
-  // Changes betwen songs
+  // Changes between songs
   SONG_ID: undefined,
   SONG_DETAILS: undefined,
   KEYBOARD_TO_PIANO: undefined,
@@ -160,7 +161,7 @@ function createPiano() {
   })
 
   function addHitEffect(note) {
-    const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
+    const x = CO.OFFSET_X(note)
     const y = CO.TARGET_Y
     const rect = scene.add.rectangle(x, y, 30, 30, 0x66aacc)
     rect.setDepth(50)
@@ -173,13 +174,19 @@ function createPiano() {
   }
   Object.entries(CO.KEYBOARD_TO_PIANO).map(addTargetBlock)
   function addTargetBlock([keyCode, note]) {
-    const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
+    // FWIW: x=0 y=0 CENTERS the line at 0,0? then x1,y1,x2,y2 define the line
+
+    const x = CO.OFFSET_X(note)
     const y = CO.TARGET_Y
-    // TODO: Hide these to get an awesome chromeless version
-    scene.add.rectangle(x, y, 55, 55, 0x66aaee, 0.5)
+
+    // Narrow rails
+    scene.add.line(0, 0, x - 20, 0, x - 20, CO.TARGET_Y * 4, 0xaaccee, 0.2)
+    scene.add.line(0, 0, x + 20, 0, x + 20, CO.TARGET_Y * 4, 0xaaccee, 0.2)
+
+    // White type box target
     scene.add.text(x - 10, y - 15, keylabel(keyCode), { font: '32px' })
-    scene.add.line(0, 0, x - 42, 0, x - 42, CO.TARGET_Y * 2 + 50, 0xaaccee, 0.4)
-    scene.add.line(0, 0, x + 42, 0, x + 42, CO.TARGET_Y * 2 + 50, 0xaaccee, 0.4)
+    const r = scene.add.rectangle(x, y, 32, 32)
+    r.setStrokeStyle(2, 0xaaaaaa, 1)
   }
 }
 

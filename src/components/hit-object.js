@@ -30,7 +30,7 @@ export function makeHitObject(
     hitTime,
     rect,
     render(time) {
-      const x = CO.NOTES.indexOf(note) * 85 + 35 + 25
+      const x = CO.OFFSET_X(note)
       // At hitTime, y should be TARGET_Y
       const y = CO.TARGET_Y - (hitTime - time) * CO.FALL_VELOCITY
       rect.setPosition(x, y)
