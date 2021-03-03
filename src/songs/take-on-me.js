@@ -51,7 +51,7 @@ export const takeonmeDetails = {
     QUOTES: 'B4',
   },
   soundFile: 'Takeonme21.mp3',
-  offset: 1100,
+  offset: 1050,
   // soundFile: 'Takeonme60.ogg',
   // offset: 50,
 }
@@ -59,7 +59,7 @@ export const takeonmeDetails = {
 function trackFromVoice() {
   const bpm = 145
   const eigthIntervalMs = (60 * 1000) / (bpm * 2) // 60k ms/m / 2bpm 8ths/m
-  const offset = 1100
+  const offset = 1050
 
   const track = []
   for (const [i, note] of voice().entries()) {
