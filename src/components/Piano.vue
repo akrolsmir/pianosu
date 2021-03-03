@@ -38,7 +38,7 @@ const CO = {
   // Same for all songs
   /** @type {Phaser.Scene} */ SCENE: undefined,
   /** @type {Tone.PolySynth} */ SYNTH: undefined,
-  FALL_VELOCITY: 600 / 1000, // px/ms
+  FALL_VELOCITY: 333 / 1000, // px/ms
   TARGET_Y: 420,
   SEEKBAR: {},
 
