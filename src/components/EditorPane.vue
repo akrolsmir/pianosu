@@ -1,8 +1,10 @@
 <template>
   <div>
     <br />
+    <button @click="saveTrack">Save this version</button>
+    &nbsp;
     <input v-model="version" />
-    <button @click="uploadTrack">Upload Your Track</button>
+    <button @click="newTrack">Save as new version</button>
     <!-- {{ JSON.stringify(songDetails, null, 2) }} -->
   </div>
 </template>
@@ -35,7 +37,16 @@ export default {
     }
   },
   methods: {
-    async uploadTrack() {
+    async saveTrack() {
+      // TODO: Maybe don't overwrite entirely in the future...
+      this.songDetails = this.getDetails()
+      this.songDetails.lastUpdateTime = Date.now()
+
+      await setSong(this.songDetails)
+      // For now, just refresh the page to get the changes
+      this.$router.go()
+    },
+    async newTrack() {
       // Kind of convoluted pattern because not sure adding reactivity to songDetails is right...
       // But maybe that's a premature optimization.
       this.songDetails = this.getDetails()
