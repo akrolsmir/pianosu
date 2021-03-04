@@ -50,8 +50,8 @@ export default {
       // Kind of convoluted pattern because not sure adding reactivity to songDetails is right...
       // But maybe that's a premature optimization.
       this.songDetails = this.getDetails()
-      const rawId = `${this.songDetails.title}-${this.version}-${nanoid()}`
-      this.songDetails.id = sanitize(rawId)
+      const readableId = sanitize(`${this.songDetails.title}-${this.version}`)
+      this.songDetails.id = `${readableId}-${nanoid()}`
       this.songDetails.version = this.version
       this.songDetails.lastUpdateTime = Date.now()
 
