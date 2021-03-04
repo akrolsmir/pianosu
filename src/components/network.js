@@ -36,3 +36,15 @@ export async function getSong(songId) {
   const doc = await db.collection('songs').doc(songId).get()
   return doc.data()
 }
+
+export async function listSongs() {
+  const docs = await db
+    .collection('songs')
+    .orderBy('lastUpdateTime', 'desc')
+    .limit(20)
+    .get()
+
+  const songs = []
+  docs.forEach((doc) => songs.push(doc.data()))
+  return songs
+}
