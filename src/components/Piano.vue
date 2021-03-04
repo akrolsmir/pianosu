@@ -14,6 +14,7 @@ import { summertimeDetails } from '../songs/summertime'
 import { takeonmeDetails } from '../songs/take-on-me'
 import { passConstants, makeHitObject } from './hit-object.js'
 import { makeSeekbar } from './seekbar.js'
+import { getSong } from './network'
 import SongsList from './SongsList.vue'
 import EditorPane from './EditorPane.vue'
 
@@ -221,19 +222,23 @@ export default {
     this.cleanup()
   },
   methods: {
-    loadSongFromRoute() {
-      const SONG_DETAILS_BY_ID = {
+    async loadSongFromRoute() {
+      const BUNDLED_SONGS = {
         summertime: summertimeDetails,
         'take-on-me': takeonmeDetails,
       }
-
       // Fill in song information before instantiating the game
-      CO.SONG_ID = this.$route.params.id || 'summertime'
-      CO.SONG_DETAILS = SONG_DETAILS_BY_ID[CO.SONG_ID]
-      CO.KEYBOARD_TO_PIANO = CO.SONG_DETAILS.keybinding
-      CO.NOTES = Object.values(CO.KEYBOARD_TO_PIANO)
+      const songId = this.$route.params.id || 'summertime'
+      const details = BUNDLED_SONGS[songId] || (await getSong(songId))
+      this.loadSong(details)
+    },
+    loadSong(songDetails) {
+      this.song = songDetails
 
-      this.song = CO.SONG_DETAILS
+      CO.SONG_DETAILS = songDetails
+      CO.SONG_ID = songDetails.id
+      CO.KEYBOARD_TO_PIANO = songDetails.keybinding
+      CO.NOTES = Object.values(CO.KEYBOARD_TO_PIANO)
 
       this.cleanup() // Remove old game if this is a reload
       game = new Phaser.Game(config)

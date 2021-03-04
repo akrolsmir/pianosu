@@ -7,6 +7,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "firebase": "^8.2.9",
     "nanoid": "^3.1.20",
     "phaser": "^3.52.0",
     "tone": "^14.7.77",
