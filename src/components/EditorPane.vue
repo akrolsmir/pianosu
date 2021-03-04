@@ -45,7 +45,7 @@ export default {
       this.songDetails.lastUpdateTime = Date.now()
 
       await setSong(this.songDetails)
-      console.log('Uploaded!', this.songDetails.id) // TODO: navigate to this song instead
+      this.$router.push(`/songs/${this.songDetails.id}`)
     },
   },
 }
