@@ -6,7 +6,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
   let start = 0 // Last start in ms
   let pause = 1 // Last pause in ms; begin in paused state
   const songObjs = []
-  const playedObjs = []
+  let playedObjs = []
 
   const BAR = scene.add.rectangle(0, 560, 800, 40, 0x002244, 0.5).setOrigin(0)
 
@@ -49,6 +49,13 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     },
     resnapPlayed() {
       playedObjs.forEach((hitObj) => hitObj.resnap())
+    },
+    clearPlayed(afterMs = 0) {
+      // Delete the Phaser rect objects; then clean up the array refs.
+      playedObjs
+        .filter((hitObj) => hitObj.hitTime >= afterMs)
+        .forEach((hitObj) => hitObj.destroy())
+      playedObjs = playedObjs.filter((hitObj) => hitObj.hitTime < afterMs)
     },
     renderObjs() {
       songObjs.forEach((hitObj) => hitObj.render(this.time()))

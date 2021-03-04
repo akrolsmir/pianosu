@@ -1,7 +1,8 @@
 <template>
   <h2>Pianosu: {{ song.title }} by {{ song.artist }}</h2>
   <div id="gameDiv" style="margin: 0 auto"></div>
-  Press "P" to play or pause; "R" to rewind; "T" to fast-forward.
+  Press "P" to play or pause; "R" to rewind; "T" to fast-forward.<br />
+  "Q" to snap notes to the beat; "W" to clear unplayed notes.
   <EditorPane :getDetails="playedDetails" />
   <SongsList />
 </template>
@@ -140,6 +141,11 @@ function createPiano() {
   // Resnap all notes
   scene.input.keyboard.addKey('Q').on('down', () => {
     CO.SEEKBAR.resnapPlayed()
+  })
+
+  // Clear notes after current time
+  scene.input.keyboard.addKey('W').on('down', () => {
+    CO.SEEKBAR.clearPlayed(CO.SEEKBAR.time())
   })
 
   // Rewind/FF while unpaused doesn't replay notes correctly...

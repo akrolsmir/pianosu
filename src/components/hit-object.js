@@ -62,6 +62,9 @@ export function makeHitObject(
       const interval = (60 * 1000) / ((bpm * divisor) / 4)
       hitTime = nearest(hitTime, interval, offset)
     },
+    destroy() {
+      rect.destroy()
+    },
   }
 }
 
