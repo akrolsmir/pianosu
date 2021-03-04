@@ -2,6 +2,7 @@
   <h2>Pianosu: {{ song.title }} by {{ song.artist }}</h2>
   <div id="gameDiv" style="margin: 0 auto"></div>
   Press "P" to play or pause; "R" to rewind; "T" to fast-forward.
+  <EditorPane :getDetails="playedDetails" />
   <SongsList />
 </template>
 
@@ -14,6 +15,7 @@ import { takeonmeDetails } from '../songs/take-on-me'
 import { passConstants, makeHitObject } from './hit-object.js'
 import { makeSeekbar } from './seekbar.js'
 import SongsList from './SongsList.vue'
+import EditorPane from './EditorPane.vue'
 
 const config = {
   type: Phaser.AUTO,
@@ -195,6 +197,7 @@ let game
 export default {
   components: {
     SongsList,
+    EditorPane,
   },
   data() {
     return {
@@ -239,6 +242,12 @@ export default {
       if (game) {
         // See: https://stackoverflow.com/a/59617457/1222351
         game.destroy(true, false)
+      }
+    },
+    playedDetails() {
+      return {
+        ...CO.SONG_DETAILS,
+        track: CO.SEEKBAR.exportPlayed(),
       }
     },
   },
