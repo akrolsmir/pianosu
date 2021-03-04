@@ -237,8 +237,8 @@ export default {
 
       CO.SONG_DETAILS = songDetails
       CO.SONG_ID = songDetails.id
-      CO.KEYBOARD_TO_PIANO = songDetails.keybinding
-      CO.NOTES = Object.values(CO.KEYBOARD_TO_PIANO)
+      CO.KEYBOARD_TO_PIANO = objectify(songDetails.keys, songDetails.notes)
+      CO.NOTES = songDetails.notes
 
       this.cleanup() // Remove old game if this is a reload
       game = new Phaser.Game(config)
@@ -256,5 +256,10 @@ export default {
       }
     },
   },
+}
+
+function objectify(keys, values) {
+  // Assumes keys.length === values.length
+  return Object.fromEntries(keys.map((k, i) => [k, values[i]]))
 }
 </script>

@@ -41,7 +41,8 @@ export default {
       this.songDetails = this.getDetails()
       const rawId = `${this.songDetails.title}-${this.version}-${nanoid()}`
       this.songDetails.id = sanitize(rawId)
-      this.songDetails.version = version
+      this.songDetails.version = this.version
+      this.songDetails.lastUpdateTime = Date.now()
 
       await setSong(this.songDetails)
       console.log('Uploaded!', this.songDetails.id) // TODO: navigate to this song instead
