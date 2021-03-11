@@ -59,9 +59,12 @@ function update(_time, _delta) {
   CO.SEEKBAR.renderObjs()
 }
 
+// Note: Preload doesn't like being async, so we getDownloadUrl beforehand
 function preload() {
   this.load.setPath('/assets/piano')
   this.load.atlas('piano', 'piano.png', 'piano.json')
+  // TODO: cache these blobs locally for faster development? Maybe browser cache
+  // already does this...
   this.load.audio(CO.SONG_ID, CO.SONG_DETAILS.soundFile)
   this.load.image('backgroundImage', CO.SONG_DETAILS.backgroundImage)
 }
@@ -235,7 +238,7 @@ export default {
       }
       // Fill in song information before instantiating the game
       const songId = this.$route.params.id || 'summertime'
-      const details = BUNDLED_SONGS[songId] || (await getSong(songId))
+      const details = (await getSong(songId)) || BUNDLED_SONGS[songId]
       this.loadSong(details)
     },
     loadSong(songDetails) {

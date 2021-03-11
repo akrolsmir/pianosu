@@ -1,24 +1,28 @@
 <template>
   <div>
-    <br />
-    <button @click="saveTrack">Save this version</button>
-    &nbsp;
-    <button @click="newTrack">Save as new version</button>
-    <input v-model="version" />
-    <!-- {{ JSON.stringify(songDetails, null, 2) }} -->
-
-    <br /><br />
+    <h2>Song Editor</h2>
+    <!-- Song metadata -->
+    ID <input v-model="songDetails.id" /><br /><br />
     Title <input v-model="songDetails.title" />&nbsp; Artist
     <input v-model="songDetails.artist" /><br /><br />
     BPM <input v-model.number="songDetails.bpm" />&nbsp; Offset
-    <input v-model.number="songDetails.offset" />
-    <!-- TODO: soundFile, bgImage, keys -->
+    <input v-model.number="songDetails.offset" /><br /><br />
+    <!-- TODO: add notes -->
+    <!-- Song blobs -->
+    Audio: <input ref="audio" type="file" accept="audio/*" /><br />
+    Image: <input ref="image" type="file" accept="image/*" /><br />
+    <button @click="uploadAll">Upload audio and image</button><br /><br />
+    <!-- Save info -->
+    <button @click="saveTrack">Save this version</button>
+    &nbsp;
+    <button @click="newTrack">Save as new version</button>
+    <input v-model="version" /><br /><br />
   </div>
 </template>
 
 <script>
 import { customAlphabet } from 'nanoid'
-import { setSong } from './network'
+import { setSong, updateSong, uploadAs } from './network'
 
 const base62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZbcdefghijklmnopqrstuvwxyz'
 const nanoid = customAlphabet(base62, 8)
@@ -64,6 +68,22 @@ export default {
 
       await setSong(this.songDetails)
       this.$router.push(`/songs/${this.songDetails.id}`)
+    },
+    async uploadAll() {
+      const toUpdate = {}
+      const id = this.songDetails.id
+      const audioFile = this.$refs.audio.files[0]
+      if (audioFile) {
+        toUpdate.songFile = await uploadAs(id, audioFile, 'audio.mp3')
+      }
+
+      const bgImage = this.$refs.image.files[0]
+      if (bgImage) {
+        toUpdate.backgroundImage = await uploadAs(id, bgImage, 'bg.jpg')
+      }
+
+      await setSong(this.songDetails) // TODO: Remove once all songs are initialized in Firestore
+      await updateSong(id, toUpdate)
     },
   },
 }
