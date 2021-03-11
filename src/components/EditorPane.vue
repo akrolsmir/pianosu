@@ -3,9 +3,16 @@
     <br />
     <button @click="saveTrack">Save this version</button>
     &nbsp;
-    <input v-model="version" />
     <button @click="newTrack">Save as new version</button>
+    <input v-model="version" />
     <!-- {{ JSON.stringify(songDetails, null, 2) }} -->
+
+    <br /><br />
+    Title <input v-model="songDetails.title" />&nbsp; Artist
+    <input v-model="songDetails.artist" /><br /><br />
+    BPM <input v-model.number="songDetails.bpm" />&nbsp; Offset
+    <input v-model.number="songDetails.offset" />
+    <!-- TODO: soundFile, bgImage, keys -->
   </div>
 </template>
 
@@ -28,18 +35,18 @@ function sanitize(input) {
 
 export default {
   props: {
-    getDetails: Function,
+    getTrack: Function,
+    songDetails: Object,
   },
   data() {
     return {
-      songDetails: {},
       version: 'vocals',
     }
   },
   methods: {
     async saveTrack() {
       // TODO: Maybe don't overwrite entirely in the future...
-      this.songDetails = this.getDetails()
+      this.songDetails.track = this.getTrack()
       this.songDetails.lastUpdateTime = Date.now()
 
       await setSong(this.songDetails)
@@ -49,7 +56,7 @@ export default {
     async newTrack() {
       // Kind of convoluted pattern because not sure adding reactivity to songDetails is right...
       // But maybe that's a premature optimization.
-      this.songDetails = this.getDetails()
+      this.songDetails.track = this.getTrack()
       const readableId = sanitize(`${this.songDetails.title}-${this.version}`)
       this.songDetails.id = `${readableId}-${nanoid()}`
       this.songDetails.version = this.version

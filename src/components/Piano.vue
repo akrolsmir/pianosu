@@ -3,7 +3,7 @@
   <div id="gameDiv" style="margin: 0 auto"></div>
   Press "P" to play or pause; "R" to rewind; "T" to fast-forward.<br />
   "Q" to snap notes to the beat; "W" to clear unplayed notes.
-  <EditorPane :getDetails="playedDetails" />
+  <EditorPane :getTrack="playedTrack" :songDetails="song" />
   <SongsList />
 </template>
 
@@ -255,11 +255,8 @@ export default {
         game.destroy(true, false)
       }
     },
-    playedDetails() {
-      return {
-        ...CO.SONG_DETAILS,
-        track: CO.SEEKBAR.exportPlayed(),
-      }
+    playedTrack() {
+      return CO.SEEKBAR.exportPlayed ? CO.SEEKBAR.exportPlayed() : []
     },
   },
 }
