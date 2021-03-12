@@ -2,15 +2,19 @@
   <div>
     <h2>Song Editor</h2>
     <!-- Song metadata -->
-    ID <input v-model="songDetails.id" /><br /><br />
+    ID
+    <input v-model="songDetails.id" style="width: 340px" disabled /><br /><br />
     Title <input v-model="songDetails.title" />&nbsp; Artist
     <input v-model="songDetails.artist" /><br /><br />
     BPM <input v-model.number="songDetails.bpm" />&nbsp; Offset
     <input v-model.number="songDetails.offset" /><br /><br />
-    <!-- TODO: add notes -->
+    Notes: <input v-model="notesString" style="width: 340px" /><br />
+    Keys: <input v-model="keyString" style="width: 340px" /><br /><br />
     <!-- Song blobs -->
-    Audio: <input ref="audio" type="file" accept="audio/*" /><br />
-    Image: <input ref="image" type="file" accept="image/*" /><br />
+    Audio: <input @change="setAudioFiles" type="file" accept="audio/*" /><br />
+    Image: <input @change="setImageFiles" type="file" accept="image/*" /><br />
+    <audio controls :src="audioSrc" />
+    <img :src="imageSrc" width="200" /><br />
     <button @click="uploadAll">Upload audio and image</button><br /><br />
     <!-- Save info -->
     <button @click="saveTrack">Save this version</button>
@@ -45,9 +49,48 @@ export default {
   data() {
     return {
       version: 'vocals',
+      audioFiles: [],
+      imageFiles: [],
     }
   },
+  computed: {
+    notesString: {
+      get() {
+        return this.songDetails.notes?.join(', ')
+      },
+      set(value) {
+        this.songDetails.notes = value.split(', ')
+      },
+    },
+    keyString: {
+      get() {
+        return this.songDetails.keys?.join(', ')
+      },
+      set(value) {
+        this.songDetails.keys = value.split(', ')
+      },
+    },
+    // Preview the uploaded files, or else the original image
+    audioSrc() {
+      if (this.audioFiles[0]) {
+        return URL.createObjectURL(this.audioFiles[0])
+      }
+      return this.songDetails.soundFile
+    },
+    imageSrc() {
+      if (this.imageFiles[0]) {
+        return URL.createObjectURL(this.imageFiles[0])
+      }
+      return this.songDetails.backgroundImage
+    },
+  },
   methods: {
+    setAudioFiles(event) {
+      this.audioFiles = event.target.files
+    },
+    setImageFiles(event) {
+      this.imageFiles = event.target.files
+    },
     async saveTrack() {
       // TODO: Maybe don't overwrite entirely in the future...
       this.songDetails.track = this.getTrack()
@@ -72,12 +115,12 @@ export default {
     async uploadAll() {
       const toUpdate = {}
       const id = this.songDetails.id
-      const audioFile = this.$refs.audio.files[0]
+      const audioFile = this.audioFiles[0]
       if (audioFile) {
-        toUpdate.songFile = await uploadAs(id, audioFile, 'audio.mp3')
+        toUpdate.soundFile = await uploadAs(id, audioFile, 'audio.mp3')
       }
 
-      const bgImage = this.$refs.image.files[0]
+      const bgImage = this.imageFiles[0]
       if (bgImage) {
         toUpdate.backgroundImage = await uploadAs(id, bgImage, 'bg.jpg')
       }
