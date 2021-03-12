@@ -1,6 +1,6 @@
 <template>
   <h2>Pianosu: {{ song.title }} by {{ song.artist }}</h2>
-  <div id="gameDiv" style="margin: 0 auto"></div>
+  <div id="gameDiv" style="margin: 0 auto" @click="defocusInputs"></div>
   Press "P" to play or pause; "R" to rewind; "T" to fast-forward.<br />
   "Q" to snap notes to the beat; "W" to clear unplayed notes.
   <EditorPane :getTrack="playedTrack" :songDetails="song" />
@@ -57,6 +57,23 @@ const CO = {
 // Time is msecs, delta is time since last update
 function update(_time, _delta) {
   CO.SEEKBAR.renderObjs()
+
+  checkShouldEnableInput(this)
+}
+
+// Disable key capture when an input is selected.
+// Courtesy of igloo.chat https://github.com/harvestzhang/igloochat/blob/910d5f6ac4573b84fa802ef3cbd94d8ab3fc0351/src/services/MainScene.js#L537
+function checkShouldEnableInput(/** @type {Phaser.Scene} */ scene) {
+  const activeTag = document.activeElement.tagName
+  if (activeTag === 'INPUT') {
+    scene.input.keyboard.disableGlobalCapture()
+    scene.input.keyboard.enabled = false
+    scene.input.keyboard.resetKeys()
+  } else {
+    if (activeTag !== 'BODY') document.activeElement.blur()
+    scene.input.keyboard.enableGlobalCapture()
+    scene.input.keyboard.enabled = true
+  }
 }
 
 // Note: Preload doesn't like being async, so we getDownloadUrl beforehand
@@ -231,6 +248,9 @@ export default {
     this.cleanup()
   },
   methods: {
+    defocusInputs() {
+      document.activeElement.blur()
+    },
     async loadSongFromRoute() {
       const BUNDLED_SONGS = {
         summertime: summertimeDetails,
