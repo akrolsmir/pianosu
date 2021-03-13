@@ -1,5 +1,5 @@
 <template>
-  <h2>Pianosu: {{ song.title }} by {{ song.artist }}</h2>
+  <h2>Pianosu: {{ song.name }} by {{ song.artist }}</h2>
   <div id="gameDiv" style="margin: 0 auto" @click="defocusInputs"></div>
   Press "P" to play or pause; "R" to rewind; "T" to fast-forward.<br />
   "Q" to snap notes to the beat; "W" to clear unplayed notes.
@@ -14,7 +14,7 @@ import { summertimeDetails } from '../songs/summertime'
 import { takeonmeDetails } from '../songs/take-on-me'
 import { passConstants, makeHitObject } from './hit-object.js'
 import { makeSeekbar } from './seekbar.js'
-import { getSong } from './network'
+import { getSong, getTrack } from './network'
 import SongsList from './SongsList.vue'
 import EditorPane from './EditorPane.vue'
 
@@ -81,8 +81,8 @@ function preload() {
   this.load.atlas('piano', 'piano.png', 'piano.json')
   // TODO: cache these blobs locally for faster development? Maybe browser cache
   // already does this...
-  this.load.audio(CO.SONG_ID, CO.SONG_DETAILS.soundFile)
-  this.load.image('backgroundImage', CO.SONG_DETAILS.backgroundImage)
+  this.load.audio(CO.SONG_ID, CO.SONG_DETAILS.audio)
+  this.load.image('bgImage', CO.TRACK.bgImage)
 }
 
 // Return the scaling factor that makes an object sized (x, y)
@@ -96,11 +96,7 @@ function create() {
   const scene = this
 
   // Draw and darken the background
-  const bg = scene.add.image(
-    config.width / 2,
-    config.height / 2,
-    'backgroundImage'
-  )
+  const bg = scene.add.image(config.width / 2, config.height / 2, 'bgImage')
   bg.scale = fit(bg.width, bg.height, config.width, config.height)
   const darken = scene.add
     .rectangle(0, 0, config.width, config.height, 0x000000, 0.4)
@@ -113,7 +109,7 @@ function create() {
 
   // Initialize the hit objects for this song
   passConstants(CO)
-  for (const { note, time } of CO.SONG_DETAILS.track) {
+  for (const { note, time } of CO.TRACK.notes) {
     CO.SEEKBAR.songObj(makeHitObject(note, time, this))
   }
 }
@@ -256,17 +252,21 @@ export default {
         'take-on-me': takeonmeDetails,
       }
       // Fill in song information before instantiating the game
-      const songId = this.$route.params.id || 'summertime'
+      const songId = this.$route.params.id || 'test'
+      const trackId = this.$route.params.track || 'piano'
       const details = (await getSong(songId)) || BUNDLED_SONGS[songId]
-      this.loadSong(details)
+      const track = await getTrack(songId, trackId)
+      this.loadSong(details, track)
     },
-    loadSong(songDetails) {
-      this.song = songDetails
+    loadSong(song, track) {
+      this.song = song
+      CO.SONG_DETAILS = song
+      CO.SONG_ID = song.id
 
-      CO.SONG_DETAILS = songDetails
-      CO.SONG_ID = songDetails.id
-      CO.KEYBOARD_TO_PIANO = objectify(songDetails.keys, songDetails.notes)
-      CO.NOTES = songDetails.notes
+      CO.TRACK = track
+
+      CO.KEYBOARD_TO_PIANO = objectify(CO.TRACK.keys, CO.TRACK.notes)
+      CO.NOTES = track.notes || []
 
       this.cleanup() // Remove old game if this is a reload
       game = new Phaser.Game(config)

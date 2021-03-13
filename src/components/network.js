@@ -70,6 +70,26 @@ export async function setTrack(songId, track) {
     .set(track)
 }
 
+export async function getTrack(songId, track) {
+  const doc = await db.doc(`songs/${songId}/tracks/${track.id}`).get()
+  return doc.data() || getDefaultTrack(songId)
+}
+
+// Return the oldest track for a song
+export async function getDefaultTrack(songId) {
+  const docs = await db
+    .collection('songs')
+    .doc(songId)
+    .collection('tracks')
+    .orderBy('lastUpdateTime')
+    .limit(1)
+    .get()
+
+  const tracks = []
+  docs.forEach((doc) => tracks.push(doc.data()))
+  return tracks[0]
+}
+
 export async function updateSong(id, toUpdate) {
   await db.collection('songs').doc(id).update(toUpdate)
 }
