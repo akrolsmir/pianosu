@@ -46,8 +46,8 @@ function sanitize(input) {
   return input
     .trim()
     .toLowerCase()
-    .replace(/\s/g, '-') // whitespace
-    .replace(/[^\p{L}-]/gu, '') // not (dash or letter in any language)
+    .replace(/\s/g, '-') // Whitespace => dashes
+    .replace(/[^-0-9\p{L}]/gu, '') // Not (dash or number or letter in any language)
     .slice(0, 100) // Cap at 100 chars
 }
 
