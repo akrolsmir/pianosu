@@ -15,21 +15,24 @@
     Image: <input @change="setImageFiles" type="file" accept="image/*" /><br />
     <audio controls :src="audioSrc" />
     <img :src="imageSrc" width="200" /><br />
-    <button @click="uploadAll">Upload audio and image</button><br /><br />
+    <!-- <button @click="uploadAll">Upload audio and image</button> &nbsp; -->
+    <button @click="createSong">Create new song!</button><br /><br />
+    <progress v-if="uploadState === 'UPLOADING'" />
     <!-- Save info -->
-    <button @click="saveTrack">Save this version</button>
+    <h3>Track</h3>
+    <button @click="saveTrack">Update this track</button>
     &nbsp;
-    <button @click="newTrack">Save as new version</button>
+    <button @click="newTrack">Save as new track</button>
     <input v-model="version" /><br /><br />
   </div>
 </template>
 
 <script>
 import { customAlphabet } from 'nanoid'
-import { setSong, updateSong, uploadAs } from './network'
+import { getSong, setSong, updateSong, uploadAs } from './network'
 
 const base62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZbcdefghijklmnopqrstuvwxyz'
-const nanoid = customAlphabet(base62, 8)
+const nanoid4 = customAlphabet(base62, 4)
 
 // Turns "This is @NOT okay" to "this-is-not-okay
 // Good for making URLs from user input (TODO: try foreign chars)
@@ -39,6 +42,7 @@ function sanitize(input) {
     .toLowerCase()
     .replace(/\s/g, '-') // whitespace
     .replace(/[^\p{L}-]/gu, '') // not (dash or letter in any language)
+    .slice(0, 100) // Cap at 100 chars
 }
 
 export default {
@@ -48,6 +52,7 @@ export default {
   },
   data() {
     return {
+      uploadState: 'NOT_STARTED', // or 'UPLOADING' or 'DONE'
       version: 'vocals',
       audioFiles: [],
       imageFiles: [],
@@ -105,16 +110,26 @@ export default {
       // But maybe that's a premature optimization.
       this.songDetails.track = this.getTrack()
       const readableId = sanitize(`${this.songDetails.title}-${this.version}`)
-      this.songDetails.id = `${readableId}-${nanoid()}`
+      this.songDetails.id = `${readableId}-${nanoid4()}`
       this.songDetails.version = this.version
       this.songDetails.lastUpdateTime = Date.now()
 
       await setSong(this.songDetails)
       this.$router.push(`/songs/${this.songDetails.id}`)
     },
-    async uploadAll() {
+    async createSong(allowOverwrite = false) {
+      this.uploadState = 'UPLOADING'
+      // Song id is sanitized title (plus 4-char nanoid, if collision?)
+      // track id is also sanitized track name, plus maybe 4 nanoid
       const toUpdate = {}
-      const id = this.songDetails.id
+      let id = sanitize(this.songDetails.id)
+
+      const existingSong = await getSong(id)
+      if (existingSong && !allowOverwrite) {
+        alert(`A song with id "${id}" already exists!`)
+        id += '-' + nanoid4()
+      }
+
       const audioFile = this.audioFiles[0]
       if (audioFile) {
         toUpdate.soundFile = await uploadAs(id, audioFile, 'audio.mp3')
@@ -127,6 +142,7 @@ export default {
 
       await setSong(this.songDetails) // TODO: Remove once all songs are initialized in Firestore
       await updateSong(id, toUpdate)
+      this.uploadState = 'DONE'
     },
   },
 }
