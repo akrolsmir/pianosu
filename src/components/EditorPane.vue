@@ -3,33 +3,39 @@
     <h2>Song Editor</h2>
     <!-- Song metadata -->
     ID
-    <input v-model="songDetails.id" style="width: 340px" disabled /><br /><br />
-    Title <input v-model="songDetails.title" />&nbsp; Artist
-    <input v-model="songDetails.artist" /><br /><br />
-    BPM <input v-model.number="songDetails.bpm" />&nbsp; Offset
-    <input v-model.number="songDetails.offset" /><br /><br />
-    Notes: <input v-model="notesString" style="width: 340px" /><br />
-    Keys: <input v-model="keyString" style="width: 340px" /><br /><br />
+    <input v-model="songId" style="width: 340px" disabled /><br /><br />
+    Title <input v-model="song.name" />&nbsp; Artist
+    <input v-model="song.artist" /><br /><br />
+    BPM <input v-model.number="song.bpm" />&nbsp; Offset
+    <input v-model.number="song.offset" /><br /><br />
+
+    <!-- Track metadata -->
+    <h3>Track</h3>
+    ID <input v-model="trackId" style="width: 340px" disabled /><br /><br />
+    Track: <input v-model="track.name" />
+    Creator:
+    <input v-model="track.creator" /><br /><br />
+    Notes: <input v-model="scaleString" style="width: 340px" /><br />
+    Keys: <input v-model="keysString" style="width: 340px" /><br /><br />
+
     <!-- Song blobs -->
     Audio: <input @change="setAudioFiles" type="file" accept="audio/*" /><br />
     Image: <input @change="setImageFiles" type="file" accept="image/*" /><br />
     <audio controls :src="audioSrc" />
     <img :src="imageSrc" width="200" /><br />
-    <!-- <button @click="uploadAll">Upload audio and image</button> &nbsp; -->
     <button @click="createSong">Create new song!</button><br /><br />
     <progress v-if="uploadState === 'UPLOADING'" />
-    <!-- Save info -->
-    <h3>Track</h3>
-    <button @click="saveTrack">Update this track</button>
+
+    <!-- TODO Save info -->
+    <!-- <button @click="saveTrack">Update this track</button>
     &nbsp;
-    <button @click="newTrack">Save as new track</button>
-    <input v-model="version" /><br /><br />
+    <button @click="newTrack">Save as new track</button> -->
   </div>
 </template>
 
 <script>
 import { customAlphabet } from 'nanoid'
-import { getSong, setSong, updateSong, uploadAs } from './network'
+import { getSong, setSong, setTrack, uploadAs } from './network'
 
 const base62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZbcdefghijklmnopqrstuvwxyz'
 const nanoid4 = customAlphabet(base62, 4)
@@ -48,31 +54,31 @@ function sanitize(input) {
 export default {
   props: {
     getTrack: Function,
-    songDetails: Object,
+    song: Object,
+    track: Object,
   },
   data() {
     return {
       uploadState: 'NOT_STARTED', // or 'UPLOADING' or 'DONE'
-      version: 'vocals',
       audioFiles: [],
       imageFiles: [],
     }
   },
   computed: {
-    notesString: {
+    scaleString: {
       get() {
-        return this.songDetails.notes?.join(', ')
+        return this.track.notes?.join(', ')
       },
       set(value) {
-        this.songDetails.notes = value.split(', ')
+        this.track.notes = value.split(', ')
       },
     },
-    keyString: {
+    keysString: {
       get() {
-        return this.songDetails.keys?.join(', ')
+        return this.track.keys?.join(', ')
       },
       set(value) {
-        this.songDetails.keys = value.split(', ')
+        this.track.keys = value.split(', ')
       },
     },
     // Preview the uploaded files, or else the original image
@@ -80,13 +86,20 @@ export default {
       if (this.audioFiles[0]) {
         return URL.createObjectURL(this.audioFiles[0])
       }
-      return this.songDetails.soundFile
+      return this.song.soundFile
     },
     imageSrc() {
       if (this.imageFiles[0]) {
         return URL.createObjectURL(this.imageFiles[0])
       }
-      return this.songDetails.backgroundImage
+      return this.song.backgroundImage
+    },
+    songId() {
+      // TODO: Debounced check against existing ids; if so, append nanoid
+      return sanitize(this.song.name || '')
+    },
+    trackId() {
+      return sanitize(this.track.name || '')
     },
   },
   methods: {
@@ -96,53 +109,37 @@ export default {
     setImageFiles(event) {
       this.imageFiles = event.target.files
     },
-    async saveTrack() {
-      // TODO: Maybe don't overwrite entirely in the future...
-      this.songDetails.track = this.getTrack()
-      this.songDetails.lastUpdateTime = Date.now()
-
-      await setSong(this.songDetails)
-      // For now, just refresh the page to get the changes
-      this.$router.go()
-    },
-    async newTrack() {
-      // Kind of convoluted pattern because not sure adding reactivity to songDetails is right...
-      // But maybe that's a premature optimization.
-      this.songDetails.track = this.getTrack()
-      const readableId = sanitize(`${this.songDetails.title}-${this.version}`)
-      this.songDetails.id = `${readableId}-${nanoid4()}`
-      this.songDetails.version = this.version
-      this.songDetails.lastUpdateTime = Date.now()
-
-      await setSong(this.songDetails)
-      this.$router.push(`/songs/${this.songDetails.id}`)
-    },
     async createSong(allowOverwrite = false) {
       this.uploadState = 'UPLOADING'
-      // Song id is sanitized title (plus 4-char nanoid, if collision?)
-      // track id is also sanitized track name, plus maybe 4 nanoid
-      const toUpdate = {}
-      let id = sanitize(this.songDetails.id)
 
+      // Song id is sanitized title (plus 4-char nanoid, if collision?)
+      let id = this.songId
       const existingSong = await getSong(id)
       if (existingSong && !allowOverwrite) {
         alert(`A song with id "${id}" already exists!`)
         id += '-' + nanoid4()
       }
+      this.song.id = id
+      this.song.lastUpdateTime = Date.now()
+      this.track.id = this.trackId
+      this.track.lastUpdateTime = Date.now()
 
       const audioFile = this.audioFiles[0]
       if (audioFile) {
-        toUpdate.soundFile = await uploadAs(id, audioFile, 'audio.mp3')
+        this.song.audio = await uploadAs(id, audioFile, 'audio.mp3')
       }
 
       const bgImage = this.imageFiles[0]
       if (bgImage) {
-        toUpdate.backgroundImage = await uploadAs(id, bgImage, 'bg.jpg')
+        this.track.bgImage = await uploadAs(id, bgImage, 'bg.jpg')
       }
 
-      await setSong(this.songDetails) // TODO: Remove once all songs are initialized in Firestore
-      await updateSong(id, toUpdate)
+      await setSong(this.song)
+      await setTrack(this.song.id, this.track)
       this.uploadState = 'DONE'
+
+      // TODO: navigate to the song
+      // this.$router.push(`/songs/${this.song.id}/${this.track.id}`)
     },
   },
 }

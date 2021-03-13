@@ -1,5 +1,5 @@
 <template>
-  <EditorPane :getTrack="playedTrack" :songDetails="song" />
+  <EditorPane :getTrack="playedTrack" :song="song" :track="track" />
 </template>
 
 <script>
@@ -10,7 +10,7 @@ export default {
     EditorPane,
   },
   data() {
-    return { song: {} }
+    return { song: {}, track: {} }
   },
 }
 </script>

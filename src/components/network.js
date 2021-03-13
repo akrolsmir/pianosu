@@ -33,6 +33,43 @@ export async function setSong(song) {
   await db.collection('songs').doc(song.id).set(song)
 }
 
+/**
+ * song: {
+ *   id: summertime
+ *   name: Summertime
+ *   artist: Maggie & Nyan
+ *   bpm, offset for now. future:
+ *   timings: [
+ *     { bpm: 120, offset: 940 }
+ *   ]
+ *   audio: http://...
+ *
+ *   tracks: [ (subcollection? nested?) {
+ *     id: piano-easy
+ *     name: Piano (Easy)
+ *     creator: Austin
+ *     instrument?: PIANO
+ *     bgImage: http://...
+ *     scale: [A#4, D#4, ...]
+ *     keys?: ['A', 'S', 'D' ]
+ *     notes: [
+ *       { time: 1234, note: 'A#4 }
+ *       ...
+ *     ]
+ *     }, ...
+ *   ]
+ * }
+ */
+
+export async function setTrack(songId, track) {
+  await db
+    .collection('songs')
+    .doc(songId)
+    .collection('tracks')
+    .doc(track.id)
+    .set(track)
+}
+
 export async function updateSong(id, toUpdate) {
   await db.collection('songs').doc(id).update(toUpdate)
 }
