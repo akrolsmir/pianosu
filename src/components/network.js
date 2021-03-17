@@ -116,6 +116,9 @@ export async function listSongs() {
 const storage = firebase.storage()
 export async function uploadAs(id, data, filename) {
   const ref = storage.ref(id).child(filename)
-  await ref.put(data)
+  // Uploaded files should be cached for 1 day, then revalidated
+  // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+  const metadata = { cacheControl: 'public, max-age=86400, must-revalidate' }
+  await ref.put(data, metadata)
   return await ref.getDownloadURL()
 }
