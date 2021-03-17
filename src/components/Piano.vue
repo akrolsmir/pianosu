@@ -49,7 +49,7 @@ const CO = {
   /** @type {Tone.PolySynth} */ SYNTH: undefined,
   FALL_VELOCITY: 333 / 1000, // px/ms
   TARGET_Y: 420,
-  OFFSET_X: (note) => CO.SCALE.indexOf(note) * 40 + 400,
+  OFFSET_X: (note) => CO.SCALE.indexOf(note) * 40 + skewedCenter(CO.SCALE),
   SEEKBAR: {},
 
   // Changes between songs
@@ -57,6 +57,10 @@ const CO = {
   SONG_DETAILS: undefined,
   KEYBOARD_TO_PIANO: undefined,
   SCALE: undefined,
+}
+
+function skewedCenter(scale) {
+  return config.width / 2 - (scale.length / 2) * 40 + 100
 }
 
 // Time is msecs, delta is time since last update
