@@ -70,8 +70,8 @@ export async function setTrack(songId, track) {
     .set(track)
 }
 
-export async function getTrack(songId, track) {
-  const doc = await db.doc(`songs/${songId}/tracks/${track.id}`).get()
+export async function getTrack(songId, trackId) {
+  const doc = await db.doc(`songs/${songId}/tracks/${trackId}`).get()
   return doc.data() || getDefaultTrack(songId)
 }
 

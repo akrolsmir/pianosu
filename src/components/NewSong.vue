@@ -1,5 +1,5 @@
 <template>
-  <EditorPane :getTrack="playedTrack" :song="song" :track="track" />
+  <EditorPane :song="song" :track="track" />
 </template>
 
 <script>

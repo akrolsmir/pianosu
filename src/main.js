@@ -8,6 +8,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   { path: '/', component: Piano },
   { path: '/songs/:id', component: Piano },
+  { path: '/songs/:id/:track', component: Piano },
+  { path: '/edit/:id/:track', component: Piano, meta: { editMode: true } },
   { path: '/new', component: NewSong },
 ]
 

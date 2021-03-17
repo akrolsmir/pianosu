@@ -15,7 +15,7 @@
     Track: <input v-model="track.name" />
     Creator:
     <input v-model="track.creator" /><br /><br />
-    Notes: <input v-model="scaleString" style="width: 340px" /><br />
+    Scale: <input v-model="scaleString" style="width: 340px" /><br />
     Keys: <input v-model="keysString" style="width: 340px" /><br /><br />
 
     <!-- Song blobs -->
@@ -23,6 +23,7 @@
     Image: <input @change="setImageFiles" type="file" accept="image/*" /><br />
     <audio controls :src="audioSrc" />
     <img :src="imageSrc" width="200" /><br />
+    <button @click="updateSong">Update song</button> &nbsp;
     <button @click="createSong">Create new song!</button><br /><br />
     <progress v-if="uploadState === 'UPLOADING'" />
 
@@ -53,7 +54,7 @@ function sanitize(input) {
 
 export default {
   props: {
-    getTrack: Function,
+    getPlayedNotes: Function,
     song: Object,
     track: Object,
   },
@@ -67,10 +68,10 @@ export default {
   computed: {
     scaleString: {
       get() {
-        return this.track.notes?.join(', ')
+        return this.track.scale?.join(', ')
       },
       set(value) {
-        this.track.notes = value.split(', ')
+        this.track.scale = value.split(', ')
       },
     },
     keysString: {
@@ -108,6 +109,14 @@ export default {
     },
     setImageFiles(event) {
       this.imageFiles = event.target.files
+    },
+    async updateSong() {
+      // Don't overwrite notes for metadata-only updates
+      const playedNotes = this.getPlayedNotes()
+      if (playedNotes.length > 0) {
+        this.track.notes = playedNotes
+      }
+      await this.createSong(/* allowOverwrite = */ true)
     },
     async createSong(allowOverwrite = false) {
       this.uploadState = 'UPLOADING'

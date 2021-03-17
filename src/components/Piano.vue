@@ -3,6 +3,12 @@
   <div id="gameDiv" style="margin: 0 auto" @click="defocusInputs"></div>
   Press "P" to play or pause; "R" to rewind; "T" to fast-forward.<br />
   "Q" to snap notes to the beat; "W" to clear unplayed notes.
+  <EditorPane
+    v-if="editMode"
+    :getPlayedNotes="getPlayedNotes"
+    :song="song"
+    :track="track"
+  />
   <SongsList />
 </template>
 
@@ -43,14 +49,14 @@ const CO = {
   /** @type {Tone.PolySynth} */ SYNTH: undefined,
   FALL_VELOCITY: 333 / 1000, // px/ms
   TARGET_Y: 420,
-  OFFSET_X: (note) => CO.NOTES.indexOf(note) * 40 + 400,
+  OFFSET_X: (note) => CO.SCALE.indexOf(note) * 40 + 400,
   SEEKBAR: {},
 
   // Changes between songs
   SONG_ID: undefined,
   SONG_DETAILS: undefined,
   KEYBOARD_TO_PIANO: undefined,
-  NOTES: undefined,
+  SCALE: undefined,
 }
 
 // Time is msecs, delta is time since last update
@@ -224,6 +230,8 @@ export default {
   data() {
     return {
       song: {},
+      track: {},
+      editMode: false,
     }
   },
   created() {
@@ -251,6 +259,7 @@ export default {
         summertime: summertimeDetails,
         'take-on-me': takeonmeDetails,
       }
+      this.editMode = this.$route.meta.editMode
       // Fill in song information before instantiating the game
       const songId = this.$route.params.id || 'test'
       const trackId = this.$route.params.track || 'piano'
@@ -260,13 +269,14 @@ export default {
     },
     loadSong(song, track) {
       this.song = song
+      this.track = track
       CO.SONG_DETAILS = song
       CO.SONG_ID = song.id
 
       CO.TRACK = track
 
-      CO.KEYBOARD_TO_PIANO = objectify(CO.TRACK.keys, CO.TRACK.notes)
-      CO.NOTES = track.notes || []
+      CO.KEYBOARD_TO_PIANO = objectify(CO.TRACK.keys, CO.TRACK.scale)
+      CO.SCALE = track.scale || []
 
       this.cleanup() // Remove old game if this is a reload
       game = new Phaser.Game(config)
@@ -277,7 +287,7 @@ export default {
         game.destroy(true, false)
       }
     },
-    playedTrack() {
+    getPlayedNotes() {
       return CO.SEEKBAR.exportPlayed ? CO.SEEKBAR.exportPlayed() : []
     },
   },
