@@ -87,11 +87,13 @@ function checkShouldEnableInput(/** @type {Phaser.Scene} */ scene) {
 
 // Note: Preload doesn't like being async, so we getDownloadUrl beforehand
 function preload() {
-  this.load.setPath('/assets/piano')
-  // TODO: cache these blobs locally for faster development? Maybe browser cache
-  // already does this...
-  this.load.audio(CO.SONG_ID, CO.SONG_DETAILS.audio)
-  this.load.image('bgImage', CO.TRACK.bgImage)
+  /** @type {Phaser.Scene} */
+  const scene = this
+  const loadingText = scene.add.text(10, 572, 'Loading...')
+  scene.load.setPath('/assets/piano')
+  scene.load.audio(CO.SONG_ID, CO.SONG_DETAILS.audio)
+  scene.load.image('bgImage', CO.TRACK.bgImage)
+  scene.load.on('complete', () => loadingText.destroy())
 }
 
 // Return the scaling factor that makes an object sized (x, y)
