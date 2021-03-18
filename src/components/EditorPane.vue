@@ -117,6 +117,7 @@ export default {
         this.track.notes = playedNotes
       }
       await this.createSong(/* allowOverwrite = */ true)
+      this.$router.go()
     },
     async createSong(allowOverwrite = false) {
       this.uploadState = 'UPLOADING'
