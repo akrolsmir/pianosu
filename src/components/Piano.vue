@@ -258,17 +258,15 @@ export default {
       document.activeElement.blur()
     },
     async loadSongFromRoute() {
-      const BUNDLED_SONGS = {
-        summertime: summertimeDetails,
-        'take-on-me': takeonmeDetails,
-      }
       this.editMode = this.$route.meta.editMode
       // Fill in song information before instantiating the game
       const songId = this.$route.params.id || 'test'
       const trackId = this.$route.params.track || 'piano'
-      const details = (await getSong(songId)) || BUNDLED_SONGS[songId]
-      const track = await getTrack(songId, trackId)
-      this.loadSong(details, track)
+      const [song, track] = await Promise.all([
+        getSong(songId),
+        getTrack(songId, trackId),
+      ])
+      this.loadSong(song, track)
     },
     loadSong(song, track) {
       this.song = song
