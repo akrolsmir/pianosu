@@ -57,7 +57,7 @@ export function makeHitObject(
       return { note, time: hitTime }
     },
     // Adjust hitTime to land on the specified divisor
-    resnap(divisor = 8) {
+    resnap(divisor = 16) {
       const { bpm, offset } = CO.SONG_DETAILS
       const interval = (60 * 1000) / ((bpm * divisor) / 4)
       hitTime = nearest(hitTime, interval, offset)
