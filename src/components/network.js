@@ -30,7 +30,10 @@ if (!firebase.apps.length) {
 export const db = firebase.firestore()
 
 export async function setSong(song) {
-  await db.collection('songs').doc(song.id).set(song)
+  // Remove the virtual 'tracks' before uploading
+  const songsCopy = { ...song }
+  delete songsCopy['tracks']
+  await db.collection('songs').doc(song.id).set(songsCopy)
 }
 
 /**
@@ -77,7 +80,7 @@ export async function getTrack(songId, trackId) {
 
 // Return the oldest track for a song
 export async function getDefaultTrack(songId) {
-  const docs = await db
+  const snapshot = await db
     .collection('songs')
     .doc(songId)
     .collection('tracks')
@@ -85,9 +88,7 @@ export async function getDefaultTrack(songId) {
     .limit(1)
     .get()
 
-  const tracks = []
-  docs.forEach((doc) => tracks.push(doc.data()))
-  return tracks[0]
+  return toArray(snapshot)[0]
 }
 
 export async function updateSong(id, toUpdate) {
@@ -99,16 +100,39 @@ export async function getSong(songId) {
   return doc.data()
 }
 
-export async function listSongs() {
+export async function listSongs(fillTracks = false) {
   const docs = await db
     .collection('songs')
     .orderBy('lastUpdateTime', 'desc')
     .limit(20)
     .get()
 
-  const songs = []
-  docs.forEach((doc) => songs.push(doc.data()))
+  const songs = toArray(docs)
+  if (fillTracks) {
+    for (const song of songs) {
+      song.tracks = await tracksForSong(song.id)
+    }
+  }
   return songs
+}
+
+async function tracksForSong(songId) {
+  const snapshot = await db.collection(`songs/${songId}/tracks`).get()
+  return toArray(snapshot)
+}
+
+export async function listTracks() {
+  const snapshot = await db
+    .collectionGroup('tracks')
+    .orderBy('lastUpdateTime', 'desc')
+    .limit(40)
+    .get()
+
+  return toArray(snapshot)
+}
+
+function toArray(snapshot) {
+  return snapshot.docs.map((doc) => doc.data())
 }
 
 // NOTE: if you change the bucket, you _may_ have to allow CORS access for Phaser...

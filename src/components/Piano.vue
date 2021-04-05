@@ -16,8 +16,6 @@
 // Demo copied from https://github.com/photonstorm/phaser3-examples/blob/master/public/src/input/multitouch/multi%20touch%20test.js
 import Phaser from 'phaser'
 import * as Tone from 'tone'
-import { summertimeDetails } from '../songs/summertime'
-import { takeonmeDetails } from '../songs/take-on-me'
 import { passConstants, makeHitObject } from './hit-object.js'
 import { makeSeekbar } from './seekbar.js'
 import { getSong, getTrack } from './network'

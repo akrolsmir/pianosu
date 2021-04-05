@@ -1,28 +1,18 @@
 <script>
-import { summertimeDetails } from '../songs/summertime.js'
-import { takeonmeDetails } from '../songs/take-on-me.js'
 import { listSongs } from './network.js'
 
-export const SONGS = [summertimeDetails, takeonmeDetails]
-
 export default {
-  data: () => ({ songs: SONGS, versions: [] }),
+  data: () => ({ songs: [] }),
   async created() {
-    this.versions = await listSongs()
+    this.songs = await listSongs(/* fillTracks = */ true)
   },
 }
 </script>
 
 <template>
-  <h2>All Songs</h2>
-  <div v-for="song in songs" :key="song.id">
-    <router-link :to="`/songs/${song.id}`">{{ song.title }}</router-link> by
-    {{ song.artist }}
-  </div>
-
   <h2>Song Versions</h2>
-  <div v-for="song in versions" :key="song.id">
-    <router-link :to="`/songs/${song.id}`"> {{ song.version }}</router-link>
-    {{ song.title }} mapped by Austin
+  <div v-for="song in songs" :key="song.id">
+    <router-link :to="`/songs/${song.id}`"> {{ song.name }}</router-link>
+    {{ song.name }} mapped by Austin
   </div>
 </template>
