@@ -22,18 +22,32 @@ export function makeHitObject(
 ) {
   const rect = scene.add.rectangle(-100, -100, 30, 30, color, alpha)
   rect.setDepth(100)
+  // Drag handlers
+  rect.setInteractive({ draggable: true })
+  rect.on('pointerover', () => (rect.fillColor = 0x34e388))
+  rect.on('pointerout', () => (rect.fillColor = color))
+  rect.on('dragstart', () => (rect.alpha = 0.7))
+  rect.on('drag', (_pointer, dragX, dragY) => hitObject.adjustHitTime(dragY))
+  rect.on('dragend', () => (rect.alpha = 1))
+  // TODO: Place note on left click; delete note on right click
 
   let replayEvent
+  let seekbarTime = 0
 
-  return {
+  const hitObject = {
     note,
     hitTime,
     rect,
+    adjustHitTime(newY) {
+      hitTime = (CO.TARGET_Y - newY) / CO.FALL_VELOCITY + seekbarTime
+      this.resnap()
+    },
     render(time) {
       const x = CO.OFFSET_X(note)
       // At hitTime, y should be TARGET_Y
       const y = CO.TARGET_Y - (hitTime - time) * CO.FALL_VELOCITY
       rect.setPosition(x, y)
+      seekbarTime = time
     },
     // Schedule this note to be replayed when seekbar gets there
     schedule(seekbarTime) {
@@ -66,6 +80,7 @@ export function makeHitObject(
       rect.destroy()
     },
   }
+  return hitObject
 }
 
 function nearest(time, interval, offset) {
