@@ -193,6 +193,16 @@ function createPiano() {
     CO.SEEKBAR.adjust(2000, 200)
   })
 
+  // When mouse wheel scrolls down or up, adjust time by +/- 1 sec
+  scene.input.on('wheel', (_pointer, _currentlyOver, _dx, dy, _dz, _event) => {
+    if (!CO.SEEKBAR.isPaused()) {
+      music.pause()
+      CO.SEEKBAR.pause()
+    }
+    let adjustment = dy && (dy > 0 ? 1000 : -1000)
+    CO.SEEKBAR.adjust(adjustment, 100)
+  })
+
   function addHitEffect(note) {
     const x = CO.OFFSET_X(note)
     const y = CO.TARGET_Y
