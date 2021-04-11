@@ -133,6 +133,9 @@ export default {
       this.song.lastUpdateTime = Date.now()
       this.track.id = this.trackId
       this.track.lastUpdateTime = Date.now()
+      if (!this.track.notes) {
+        this.track.notes = []
+      }
 
       const audioFile = this.audioFiles[0]
       if (audioFile) {
