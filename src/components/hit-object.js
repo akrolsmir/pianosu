@@ -39,19 +39,19 @@ export function makeHitObject(
     hitTime,
     rect,
     adjustHitTime(newY) {
-      hitTime = (CO.TARGET_Y - newY) / CO.FALL_VELOCITY + seekbarTime
+      this.hitTime = (CO.TARGET_Y - newY) / CO.FALL_VELOCITY + seekbarTime
       this.resnap()
     },
     render(time) {
       const x = CO.OFFSET_X(note)
       // At hitTime, y should be TARGET_Y
-      const y = CO.TARGET_Y - (hitTime - time) * CO.FALL_VELOCITY
+      const y = CO.TARGET_Y - (this.hitTime - time) * CO.FALL_VELOCITY
       rect.setPosition(x, y)
       seekbarTime = time
     },
     // Schedule this note to be replayed when seekbar gets there
     schedule(seekbarTime) {
-      const delay = hitTime - seekbarTime
+      const delay = this.hitTime - seekbarTime
       if (delay >= 0) {
         replayEvent = scene.time.addEvent({
           delay,
@@ -68,13 +68,13 @@ export function makeHitObject(
     },
     // Returns the serializable version
     toHit() {
-      return { note, time: hitTime }
+      return { note, time: this.hitTime }
     },
     // Adjust hitTime to land on the specified divisor
     resnap(divisor = 16) {
       const { bpm, offset } = CO.SONG_DETAILS
       const interval = (60 * 1000) / ((bpm * divisor) / 4)
-      hitTime = nearest(hitTime, interval, offset)
+      this.hitTime = nearest(this.hitTime, interval, offset)
     },
     destroy() {
       rect.destroy()
