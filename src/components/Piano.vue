@@ -1,8 +1,8 @@
 <template>
   <h2>Pianosu: {{ song.name }} by {{ song.artist }}</h2>
   <div id="gameDiv" style="margin: 0 auto" @click="defocusInputs"></div>
-  Press "P" to play or pause; "R" to rewind; "T" to fast-forward.<br />
-  "Q" to snap notes to the beat; "W" to clear unplayed notes.
+  Press [Space] to play or pause; [R] to rewind; [T] to fast-forward.<br />
+  [Q] to snap notes to the beat; [W] to clear unplayed notes.
   <EditorPane
     v-if="editMode"
     :getPlayedNotes="getPlayedNotes"
@@ -151,7 +151,7 @@ function createPiano() {
   }
 
   // Play controls
-  const playKey = scene.input.keyboard.addKey('P')
+  const playKey = scene.input.keyboard.addKey('SPACE')
   const music = scene.sound.add(CO.SONG_ID, { volume: 0.3 })
   playKey.on('down', () => {
     if (CO.SEEKBAR.isPaused()) {

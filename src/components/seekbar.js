@@ -11,7 +11,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
   const BAR = scene.add.rectangle(0, 560, 800, 40, 0x002244, 0.5).setOrigin(0)
 
   const SEEK_TEXT = scene.add.text(10, 572, '')
-  const INSTRUCTION_TEXT = scene.add.text(560, 572, 'Press "P" to play')
+  const INSTRUCTION_TEXT = scene.add.text(560, 572, 'Press [Space] to play')
 
   return {
     time() {
@@ -70,7 +70,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
         hitObj.unschedule()
       }
 
-      INSTRUCTION_TEXT.text = 'Press "P" to resume'
+      INSTRUCTION_TEXT.text = 'Press [Space] to resume'
     },
     isPaused() {
       return pause != 0
