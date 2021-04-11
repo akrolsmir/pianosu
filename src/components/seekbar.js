@@ -85,18 +85,24 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
         return
       }
 
-      const DELAY_MS = 10
-      const adjustment = offset / (smearMs / DELAY_MS)
+      // Note: The phaser timer seems to runs slower than wall-clock;
+      // The shorter your delay (eg 5ms), the slower these events fire.
+      const DELAY_MS = 15
+      const repeats = Math.round(smearMs / DELAY_MS)
+      const adjustment = offset / repeats
       scene.time.addEvent({
         delay: DELAY_MS,
         // `repeat: n` will trigger n + 1 events
-        repeat: smearMs / DELAY_MS - 1,
+        repeat: repeats - 1,
         // Only adjust while audio is paused
         callback: () => (start -= this.isPaused() ? adjustment : 0),
       })
     },
     playConfig() {
       return { seek: this.time() / 1000, rate: RATE }
+    },
+    complete() {
+      INSTRUCTION_TEXT.text = 'Press [Enter] to replay'
     },
   }
 }

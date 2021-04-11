@@ -153,15 +153,24 @@ function createPiano() {
   // Play controls
   const playKey = scene.input.keyboard.addKey('SPACE')
   const music = scene.sound.add(CO.SONG_ID, { volume: 0.3 })
-  playKey.on('down', () => {
+  playKey.on('down', playPause)
+
+  function playPause() {
     if (CO.SEEKBAR.isPaused()) {
       CO.SEEKBAR.resume()
       music.play(CO.SEEKBAR.playConfig())
+      music.once('complete', CO.SEEKBAR.complete)
     } else {
+      pause()
+    }
+  }
+
+  function pause() {
+    if (!CO.SEEKBAR.isPaused()) {
       CO.SEEKBAR.pause()
       music.pause()
     }
-  })
+  }
 
   // Resnap all notes
   scene.input.keyboard.addKey('Q').on('down', () => {
@@ -176,22 +185,33 @@ function createPiano() {
   // Rewind/FF while unpaused doesn't replay notes correctly...
   // Move song back by 2 sec
   const rewindKey = scene.input.keyboard.addKey('R')
-  rewindKey.on('down', async () => {
-    if (!CO.SEEKBAR.isPaused()) {
-      music.pause()
-      CO.SEEKBAR.pause()
-    }
+  rewindKey.on('down', () => {
+    pause()
     CO.SEEKBAR.adjust(-2000, 200)
   })
 
   // Fast forward by 2 sec
   const ffKey = scene.input.keyboard.addKey('T')
-  ffKey.on('down', async () => {
-    if (!CO.SEEKBAR.isPaused()) {
-      music.pause()
-      CO.SEEKBAR.pause()
-    }
+  ffKey.on('down', () => {
+    pause()
     CO.SEEKBAR.adjust(2000, 200)
+  })
+
+  // Watch replay by going to the beginning
+  const replayKey = scene.input.keyboard.addKey('ENTER')
+  replayKey.on('down', () => {
+    pause()
+
+    // Rewind at least 20x speed; 0.6s transition at most
+    const time = CO.SEEKBAR.time()
+    const smear = Math.min(Math.floor(time / 20), 600)
+    CO.SEEKBAR.adjust(-time, smear)
+
+    // Resume playing
+    scene.time.addEvent({
+      delay: smear + 200 /* Grace period since smearing can be slow */,
+      callback: playPause,
+    })
   })
 
   // When mouse wheel scrolls down or up, adjust time by +/- 1 sec
