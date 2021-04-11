@@ -20,7 +20,8 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     },
     textTime() {
       // Format as "MM:SS.mmm"
-      const nice = (f, lead) => `${Math.floor(f)}`.padStart(lead, '0')
+      const nice = (f, lead) =>
+        `${Math.max(Math.floor(f), 0)}`.padStart(lead, '0')
       const min = nice(Math.floor(this.time() / 1000 / 60), 2)
       const sec = nice((this.time() / 1000) % 60, 2)
       const msec = nice((this.time() % 1000) - 1, 3)
