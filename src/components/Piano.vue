@@ -37,6 +37,7 @@ const config = {
     update: update,
   },
   // TODO: input: {keyboard: {target: window}} ?
+  disableContextMenu: true,
   parent: 'gameDiv',
 }
 

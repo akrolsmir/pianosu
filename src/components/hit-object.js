@@ -29,10 +29,19 @@ export function makeHitObject(
   rect.on('dragstart', () => (rect.alpha = 0.7))
   rect.on('drag', (_pointer, dragX, dragY) => hitObject.adjustHitTime(dragY))
   rect.on('dragend', () => (rect.alpha = 1))
-  // TODO: Place note on left click; delete note on right click
+  // Delete note on right click
+  rect.on('pointerdown', (pointer) => {
+    if (pointer.rightButtonDown()) {
+      // TODO: This doesn't delete from the referencing array
+      hitObject.destroy()
+    }
+  })
+  // TODO: Place note on left click
 
+  // Local variables
   let replayEvent
   let seekbarTime = 0
+  let deleted = false
 
   const hitObject = {
     note,
@@ -56,7 +65,9 @@ export function makeHitObject(
         replayEvent = scene.time.addEvent({
           delay,
           callback: () => {
-            CO.SYNTH.triggerAttackRelease(note, '8n')
+            if (!deleted) {
+              CO.SYNTH.triggerAttackRelease(note, '8n')
+            }
           },
         })
       }
@@ -66,9 +77,9 @@ export function makeHitObject(
         replayEvent.destroy()
       }
     },
-    // Returns the serializable version
+    // Returns the serializable version (or undefined if deleted)
     toHit() {
-      return { note, time: this.hitTime }
+      return deleted ? undefined : { note, time: this.hitTime }
     },
     // Adjust hitTime to land on the specified divisor
     resnap(divisor = 16) {
@@ -78,6 +89,7 @@ export function makeHitObject(
     },
     destroy() {
       rect.destroy()
+      deleted = true
     },
   }
   return hitObject

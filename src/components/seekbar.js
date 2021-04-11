@@ -46,17 +46,15 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
       playedObjs.push(hitObj)
     },
     exportPlayed() {
-      return playedObjs.map((hitObj) => hitObj.toHit())
+      return playedObjs.map((hitObj) => hitObj.toHit()).filter(Boolean)
     },
     resnapPlayed() {
       playedObjs.forEach((hitObj) => hitObj.resnap())
     },
     clearPlayed(afterMs = 0) {
-      // Delete the Phaser rect objects; then clean up the array refs.
       playedObjs
         .filter((hitObj) => hitObj.hitTime >= afterMs)
         .forEach((hitObj) => hitObj.destroy())
-      playedObjs = playedObjs.filter((hitObj) => hitObj.hitTime < afterMs)
     },
     renderObjs() {
       songObjs.forEach((hitObj) => hitObj.render(this.time()))
