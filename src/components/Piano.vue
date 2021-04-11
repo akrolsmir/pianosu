@@ -217,6 +217,10 @@ function createPiano() {
   }
   Object.entries(CO.KEYBOARD_TO_PIANO).map(addTargetBlock)
   function addTargetBlock([keyCode, note]) {
+    if (!keyCode) {
+      return
+    }
+
     // FWIW: x=0 y=0 CENTERS the line at 0,0? then x1,y1,x2,y2 define the line
 
     const x = CO.OFFSET_X(note)
