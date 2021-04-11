@@ -91,7 +91,8 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
         delay: DELAY_MS,
         // `repeat: n` will trigger n + 1 events
         repeat: smearMs / DELAY_MS - 1,
-        callback: () => (start -= adjustment),
+        // Only adjust while audio is paused
+        callback: () => (start -= this.isPaused() ? adjustment : 0),
       })
     },
     playConfig() {
