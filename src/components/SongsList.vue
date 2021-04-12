@@ -10,9 +10,9 @@ export default {
 </script>
 
 <template>
-  <h2>Song Versions</h2>
+  <h2>All Songs</h2>
   <div v-for="song in songs" :key="song.id">
     <router-link :to="`/songs/${song.id}`"> {{ song.name }}</router-link>
-    {{ song.name }} mapped by Austin
+    by {{ song.artist }}
   </div>
 </template>

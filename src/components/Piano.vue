@@ -296,7 +296,7 @@ export default {
     async loadSongFromRoute() {
       this.editMode = this.$route.meta.editMode
       // Fill in song information before instantiating the game
-      const songId = this.$route.params.id || 'test'
+      const songId = this.$route.params.id || 'something-just-like-this'
       const trackId = this.$route.params.track || 'piano'
       const [song, track] = await Promise.all([
         getSong(songId),
