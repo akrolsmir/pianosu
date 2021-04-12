@@ -3,5 +3,6 @@ node_modules
 dist
 dist-ssr
 *.local
+public/assets/temp/
 public/essentiajs/*.mp3
 src/assets/frequencies/
