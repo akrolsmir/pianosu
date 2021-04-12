@@ -121,6 +121,7 @@ function create() {
   passConstants(CO)
   for (const { note, time } of CO.TRACK.notes) {
     CO.SEEKBAR.songObj(makeHitObject(note, time, this))
+    CO.SEEKBAR.makeGuideLines()
   }
 }
 

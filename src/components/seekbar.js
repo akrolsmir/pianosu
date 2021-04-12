@@ -1,3 +1,5 @@
+import { guideTimes, makeGuideLine } from './hit-object'
+
 let RATE = 1 // TODO: Rate changes should shift pitches too
 
 // TODO: Does it make sense to use Phaser's built in timeline?
@@ -7,6 +9,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
   let pause = 1 // Last pause in ms; begin in paused state
   const songObjs = []
   let playedObjs = []
+  let guideLines = []
 
   const BAR = scene.add.rectangle(0, 560, 800, 40, 0x002244, 0.5).setOrigin(0)
 
@@ -45,6 +48,9 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     playObj(hitObj) {
       playedObjs.push(hitObj)
     },
+    makeGuideLines() {
+      guideLines = guideTimes().map((time) => makeGuideLine(time, scene))
+    },
     exportPlayed() {
       return playedObjs.map((hitObj) => hitObj.toHit()).filter(Boolean)
     },
@@ -59,6 +65,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     renderObjs() {
       songObjs.forEach((hitObj) => hitObj.render(this.time()))
       playedObjs.forEach((hitObj) => hitObj.render(this.time()))
+      guideLines.forEach((line) => line.render(this.time()))
 
       SEEK_TEXT.text = this.textTime()
     },
@@ -87,6 +94,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
 
       // Note: The phaser timer seems to runs slower than wall-clock;
       // The shorter your delay (eg 5ms), the slower these events fire.
+      // Also: rapid-fire adjustments won't stack correctly (eg rapid mousewheel)
       const DELAY_MS = 15
       const repeats = Math.round(smearMs / DELAY_MS)
       const adjustment = offset / repeats
@@ -102,7 +110,7 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
       return { seek: this.time() / 1000, rate: RATE }
     },
     complete() {
-      INSTRUCTION_TEXT.text = 'Press [Enter] to replay'
+      INSTRUCTION_TEXT.text = 'Hit [Enter] to play back'
     },
   }
 }

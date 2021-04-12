@@ -100,3 +100,26 @@ function nearest(time, interval, offset) {
   const multiple = Math.round(delta / interval)
   return Math.round(multiple * interval + offset)
 }
+
+// TODO: Consider reusing a single guideline instead of making a bunch
+export function guideTimes(divisor = 1, max = 100) {
+  const { bpm, offset } = CO.SONG_DETAILS
+  const interval = (60 * 1000) / ((bpm * divisor) / 4)
+  const range = [...Array(max).keys()]
+  return range.map((i) => offset + i * interval)
+}
+
+export function makeGuideLine(hitTime, /** @type {Phaser.Scene} */ scene) {
+  // TODO: these constants should be taken from CO
+  const length = CO.SCALE.length * 40
+  const skewedCenter = 800 / 2 + 100 - 40 / 2
+  const line = scene.add.line(skewedCenter, 0, 0, 0, length, 0, 0xffffff, 0.2)
+
+  return {
+    render(time) {
+      // At hitTime, y should be TARGET_Y
+      const y = CO.TARGET_Y - (hitTime - time) * CO.FALL_VELOCITY
+      line.setY(y)
+    },
+  }
+}
