@@ -21,6 +21,7 @@ import { makeSeekbar } from './seekbar.js'
 import { getSong, getTrack } from './network'
 import SongsList from './SongsList.vue'
 import EditorPane from './EditorPane.vue'
+import { SampleLibrary } from '../vendor/Tonejs-Instruments.js'
 
 const config = {
   type: Phaser.AUTO,
@@ -129,15 +130,28 @@ function createPiano() {
   /** @type {Phaser.Scene} */
   const scene = this
 
-  CO.SYNTH = new Tone.PolySynth(Tone.Synth).toDestination()
+  // CO.SYNTH = new Tone.PolySynth(Tone.Synth).toDestination()
+  CO.SYNTH = SampleLibrary.load({
+    instruments: 'piano',
+    minify: true,
+  }).toDestination()
+  // TODO: Load the specific hitsound samples required by the song
+
+  // E.g. Given a note like 'A#3', return 'A#2'
+  function shiftDownOctave(note) {
+    const [, key, octave] = note.match(/([A-G][#b]?)(\d)/)
+    return `${key}${parseInt(octave) - 1}`
+  }
 
   // Play white notes on keypress
   // Keycodes at https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyCodes.html
   for (const keyCode of Object.keys(CO.KEYBOARD_TO_PIANO)) {
     const keyObject = scene.input.keyboard.addKey(keyCode)
+    const note = CO.KEYBOARD_TO_PIANO[keyCode]
+
+    // Ideally: '8n' minimum, but if held longer than plays longer
     keyObject.on('down', () => {
-      const note = CO.KEYBOARD_TO_PIANO[keyCode]
-      CO.SYNTH.triggerAttackRelease(note, '8n')
+      CO.SYNTH.triggerAttack(shiftDownOctave(note))
 
       // Also draw a hit effect for that note
       if (CO.SEEKBAR.isPaused()) {
@@ -148,6 +162,9 @@ function createPiano() {
         const time = Math.round(CO.SEEKBAR.time()) // <0.5ms shift is not detectable
         CO.SEEKBAR.playObj(makeHitObject(note, time, this, 0x66aacc))
       }
+    })
+    keyObject.on('up', () => {
+      CO.SYNTH.triggerRelease(shiftDownOctave(note), Tone.now() + 0.05)
     })
   }
 
@@ -181,6 +198,11 @@ function createPiano() {
   // Clear notes after current time
   scene.input.keyboard.addKey('W').on('down', () => {
     CO.SEEKBAR.clearPlayed(CO.SEEKBAR.time())
+  })
+
+  // Mirror all song notes into played
+  scene.input.keyboard.addKey('E').on('down', () => {
+    CO.SEEKBAR.mirrorSongToPlayed()
   })
 
   // Rewind/FF while unpaused doesn't replay notes correctly...

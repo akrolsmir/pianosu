@@ -5,4 +5,5 @@ dist-ssr
 *.local
 public/assets/temp/
 public/essentiajs/*.mp3
+public/samples/
 src/assets/frequencies/

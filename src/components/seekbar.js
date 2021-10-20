@@ -1,4 +1,4 @@
-import { guideTimes, makeGuideLine } from './hit-object'
+import { guideTimes, makeGuideLine, makeHitObject } from './hit-object'
 
 let RATE = 1 // TODO: Rate changes should shift pitches too
 
@@ -47,6 +47,16 @@ export function makeSeekbar(/** @type {Phaser.Scene} */ scene) {
     },
     playObj(hitObj) {
       playedObjs.push(hitObj)
+    },
+    mirrorSongToPlayed() {
+      // First, clear out all playedObjs
+      playedObjs.forEach((hitObj) => hitObj.destroy())
+      // Then copy all songObjs into playedObjs
+      for (const hitObj of songObjs) {
+        this.playObj(
+          makeHitObject(hitObj.note, hitObj.hitTime, scene, 0x66aacc)
+        )
+      }
     },
     makeGuideLines() {
       guideLines = guideTimes().map((time) => makeGuideLine(time, scene))
