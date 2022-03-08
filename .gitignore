@@ -6,5 +6,4 @@ dist-ssr
 public/assets/temp/
 public/essentiajs/*.mp3
 public/samples/piano/*.wav
-public/samples/piano/*.mp3
 src/assets/frequencies/
